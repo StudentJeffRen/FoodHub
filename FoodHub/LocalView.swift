@@ -13,14 +13,12 @@ struct RestaurantListLocal: View {
     
     var body: some View {
         
-        VStack {
-
-            NavigationView {
-                RestaurantList()
-                    .navigationBarTitle(Text("My Restaurants"))
-                    .navigationBarItems(trailing: addButton(destinationView: NewRestaurant().environmentObject(localData), isRegister: false))
-            }
+        NavigationView {
+            RestaurantLocalList()
+                .navigationBarTitle(Text("My Restaurants"), displayMode: .large)
+            //                    .navigationBarItems(trailing: addButton(destinationView: NewRestaurant().environmentObject(localData), isRegister: false))
         }
+        
     }
     
 }
@@ -28,7 +26,7 @@ struct RestaurantListLocal: View {
 struct RestaurantListLocal_Previews: PreviewProvider {
     static var previews: some View {
             RestaurantListLocal()
-            .environmentObject(UserData(from: restaurantData))
+            .environmentObject(UserData(from: restaurantLocalData))
     }
 }
 

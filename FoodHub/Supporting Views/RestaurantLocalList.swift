@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct RestaurantList: View {
+struct RestaurantLocalList: View {
     @EnvironmentObject var localData: UserData
     
     var body: some View {
@@ -17,8 +17,7 @@ struct RestaurantList: View {
                 NavigationLink(destination: RestaurantDetail(restaurant: restaurant)) {
                     RestaurantRow(restaurant: restaurant)
                 }
-            }
-            .onDelete(perform: delete)
+            }.onDelete(perform: delete)
         }
     }
     
@@ -33,13 +32,14 @@ struct RestaurantRow: View {
     var body: some View {
         HStack {
             HStack(alignment: .top) {
-                restaurant.image
+                Image(restaurant.image)
                     .resizable()
                     .frame(width: 75, height: 75)
-                    .clipShape(Circle())
+                    .cornerRadius(5)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(restaurant.name)
                         .font(.headline)
+                        
                     Text(restaurant.type)
                         .font(.subheadline)
                         .foregroundColor(Color.gray)
@@ -51,13 +51,13 @@ struct RestaurantRow: View {
             .scaledToFill()
             Spacer()
         }
-        .padding(.horizontal)
+        
     }
 }
 
 struct RestaurantList_Previews: PreviewProvider {
     static var previews: some View {
-            RestaurantList()
-            .environmentObject(UserData(from: restaurantCloudData))
+            RestaurantLocalList()
+            .environmentObject(UserData(from: restaurantLocalData))
     }
 }

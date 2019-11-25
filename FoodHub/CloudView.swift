@@ -9,12 +9,15 @@
 import SwiftUI
 
 struct RestaurantListCloud: View {
-    @EnvironmentObject var userData: UserData
+    @EnvironmentObject var cloudData: UserData
     
     var body: some View {
         
         NavigationView {
-            RestaurantList()
+            List(cloudData.restaurants) { restaurant in
+                RestaurantCloudRow(restaurant: restaurant)
+            }
+            
             .navigationBarTitle(Text("Cloud"))
         }
     }
@@ -23,6 +26,6 @@ struct RestaurantListCloud: View {
 struct RestaurantListCloud_Previews: PreviewProvider {
     static var previews: some View {
             RestaurantListCloud()
-            .environmentObject(UserData(from: restaurantCloudData))
+                .environmentObject(UserData(from: restaurantCloudData))
     }
 }

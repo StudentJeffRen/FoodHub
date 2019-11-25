@@ -21,7 +21,7 @@ struct NewRestaurantMoreInfo: View {
     
     @State var phone = ""
     
-    var newRestaurant = Restaurant()
+    var newRestaurant: Restaurant
     
     var body: some View {
         VStack(spacing: 50) {
@@ -37,7 +37,6 @@ struct NewRestaurantMoreInfo: View {
             Button(action: {self.addPicture()}) {
                 Image(systemName: "plus.square")
             }
-            
             
             Button(action: {
                 self.saveToLocal()

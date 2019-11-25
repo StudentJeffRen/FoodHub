@@ -11,7 +11,6 @@ import SwiftUI
 struct Tab: View {
     @State private var currentTab = 1
     
-    
     var body: some View {
         TabView(selection: $currentTab) {
             RestaurantListLocal()
@@ -20,7 +19,6 @@ struct Tab: View {
                     Text("Local") }.tag(1)
             
             RestaurantListCloud()
-                .environmentObject(UserData(from: restaurantCloudData))
                 .tabItem {
                     Image(systemName: "cloud")
                     Text("Cloud") }.tag(2)

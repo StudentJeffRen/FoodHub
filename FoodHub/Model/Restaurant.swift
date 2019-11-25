@@ -12,31 +12,32 @@ import CoreLocation
 
 class Restaurant: Identifiable {
     var id = UUID()
-    var name = ""
-    var type = ""
-    var location = ""
-    var imageName = "restaurant"
-//    fileprivate var coordinates: Coordinates
-    var rating = ""
-    var phone = ""
-    var isRating = false
-    var description = ""
+    var name: String
+    var type: String
+    var location: String
+    var image: String
+    var rating: String
+    var phone: String
+    var description: String
     
-//    var locationCoordinate: CLLocationCoordinate2D {
-//        CLLocationCoordinate2D(
-//            latitude: coordinates.latitude,
-//            longitude: coordinates.longitude)
-//    }
-}
-
-extension Restaurant {
-    var image: Image {
-        Image(imageName)
+    init(name: String, type: String, location: String, image: String, rating: String, phone: String, description: String) {
+        self.name = name
+        self.type = type
+        self.location = location
+        self.image = image
+        self.rating = rating
+        self.phone = phone
+        self.description = description
     }
 }
 
-//struct Coordinates: Hashable, Codable {
-//    var latitude: Double
-//    var longitude: Double
-//}
+var restaurantLocalData = [
+    Restaurant(name: "Lao Changsha", type: "Xiang", location: "Macau", image: "restaurant", rating: "Happy", phone: "6599", description: "A good restaurant"),
+    Restaurant(name: "Lao Sichuan", type: "Chuan", location: "Zhuhai", image: "Wechat", rating: "Happy", phone: "6699", description: "A simple restaurant")
+]
+var restaurantCloudData: [Restaurant] = [
+    Restaurant(name: "Lao Guangzhou", type: "Yue", location: "America", image: "Wechat", rating: "Happy", phone: "6599", description: "A good restaurant"),
+    Restaurant(name: "Lao Chongqin", type: "Yu", location: "China", image: "restaurant", rating: "Happy", phone: "6699", description: "A simple restaurant")
+]
+var allRestaurant = restaurantLocalData + restaurantCloudData
 
