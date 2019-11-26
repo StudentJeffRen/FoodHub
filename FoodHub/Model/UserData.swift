@@ -16,3 +16,15 @@ final class UserData: ObservableObject {
         self.restaurants = dataSouce
     }
 }
+
+final class UserAuth: ObservableObject {
+    @Published var isLogin = false
+}
+
+final class SharedData: ObservableObject {
+    @Published var sharedRestaurants: [Restaurant] = []
+    
+    init(from dataSource: [Restaurant]) {
+        self.sharedRestaurants = dataSource
+    }
+}

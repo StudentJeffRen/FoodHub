@@ -9,11 +9,14 @@
 import SwiftUI
 
 struct Tab: View {
+    @EnvironmentObject var loginPermission: UserAuth
     @State private var currentTab = 1
     
     var body: some View {
+        
         TabView(selection: $currentTab) {
             RestaurantListLocal()
+                
                 .tabItem {
                     Image(systemName: "folder")
                     Text("Local") }.tag(1)
@@ -32,6 +35,7 @@ struct Tab: View {
                 Image(systemName: "tag")
                 Text("About") }.tag(4)
         }
+        
     }
 }
 

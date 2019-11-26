@@ -13,6 +13,7 @@ enum ActiveAlert {
 }
 
 struct LoginView: View {
+    @EnvironmentObject var loginPermission: UserAuth
     let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext
     @Environment(\.managedObjectContext) var managedObjectContext
     @FetchRequest(fetchRequest: User.allUsersFetchRequest()) var users: FetchedResults<User>
@@ -21,51 +22,49 @@ struct LoginView: View {
     @State private var password = ""
     @State private var showAlert = false
     @State private var activeAlert: ActiveAlert = .noId
-    @State private var loginPermission = false
-    
+    @State private var showAddSheet = false
     
     var body: some View {
         VStack {
-            if loginPermission {
-                Tab()
-                    .animation(.default)
-            } else {
-                VStack {
-                    Image("foodpin-logo")
-                        .padding(.bottom, 70)
+            Image("foodpin-logo")
+                .padding(.bottom, 70)
+            
+            VStack {
+                VStack(spacing: 50) {
+                    FormField(fieldName: "Username", fieldValue: $userId)
+                    FormField(fieldName: "Password", fieldValue: $password, isSecure: true)
                     
-                    VStack {
-                        VStack(spacing: 50) {
-                            FormField(fieldName: "Username", fieldValue: $userId)
-                            FormField(fieldName: "Password", fieldValue: $password, isSecure: true)
-                                
-                        }.padding()
-                        
-                        VStack(spacing: 10) {
-                            Button(action: {self.checkLogin()}) {
-                                standardButton(text: "Sign in")
-                            }
-                            .padding(.top, 50)
-                            .alert(isPresented: $showAlert) {
-                                switch activeAlert {
-                                case .noId:
-                                    return Alert(title: Text("Oops"), message: Text("No such account"), dismissButton: .default(Text("Got it")))
-                                case .passwordNotMatch:
-                                    return Alert(title: Text("Oops"), message: Text("Password does not match"), dismissButton: .default(Text("Got it")))
-                                case .notComplete:
-                                    return Alert(title: Text("Oops"), message: Text("Fill all blanks"), dismissButton: .default(Text("Got it")))
-                                }
-                            }
-                            
-                            addButton(destinationView: EnrollView().environment(\.managedObjectContext, context!), isRegister: true)
+                }.padding()
+                
+                VStack(spacing: 10) {
+                    Button(action: {self.checkLogin()}) {
+                        standardButton(text: "Sign in")
+                    }
+                    .padding(.top, 50)
+                    .alert(isPresented: $showAlert) {
+                        switch activeAlert {
+                        case .noId:
+                            return Alert(title: Text("Oops"), message: Text("No such account"), dismissButton: .default(Text("Got it")))
+                        case .passwordNotMatch:
+                            return Alert(title: Text("Oops"), message: Text("Password does not match"), dismissButton: .default(Text("Got it")))
+                        case .notComplete:
+                            return Alert(title: Text("Oops"), message: Text("Fill all blanks"), dismissButton: .default(Text("Got it")))
                         }
                     }
-                .padding()
+                    
+                    Button(action: {
+                        print("Button Pushed")
+                        self.showAddSheet.toggle()
+                        print(self.showAddSheet)
+                    }) {
+                        standardButton(text: "Register")
+                    }.sheet(isPresented: self.$showAddSheet) {
+                        EnrollView().environment(\.managedObjectContext, self.context!)
+                    }
                 }
             }
+            .padding()
         }
-        
-        
     }
     
     // 比较账号密码，无账号，密码错误，弹窗
@@ -98,7 +97,7 @@ struct LoginView: View {
         }
         else {
             withAnimation {
-                self.loginPermission.toggle()
+                self.loginPermission.isLogin = true
             }
             print("Hello")
         }

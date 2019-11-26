@@ -29,6 +29,10 @@ class Restaurant: Identifiable {
         self.phone = phone
         self.description = description
     }
+    
+    convenience init() {
+        self.init(name: "", type: "", location: "", image: "", rating: "", phone: "", description: "")
+    }
 }
 
 var restaurantLocalData = [

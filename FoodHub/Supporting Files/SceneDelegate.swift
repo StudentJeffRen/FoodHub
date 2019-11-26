@@ -13,6 +13,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     var localData = UserData(from: restaurantLocalData)
+    var cloudData = SharedData(from: restaurantCloudData)
+    var loginPermission = UserAuth()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
@@ -22,9 +24,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext else {
             fatalError("Unable to read managed object context.")
         }
-        let contentView = LoginView().environment(\.managedObjectContext, context)
+        let contentView = StartView().environment(\.managedObjectContext, context)
             .environmentObject(localData)
-            
+            .environmentObject(cloudData)
+            .environmentObject(loginPermission)
         
         
         // Use a UIHostingController as window root view controller.

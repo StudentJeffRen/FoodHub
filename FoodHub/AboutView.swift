@@ -9,6 +9,8 @@
 import SwiftUI
 
 struct AboutView: View {
+    @EnvironmentObject var loginPermission: UserAuth
+    
     var body: some View {
         NavigationView {
             Form {
@@ -38,7 +40,9 @@ struct AboutView: View {
                 
                 Section{
                     Button(action: {
-                       // 回到登陆
+                        withAnimation {
+                            self.loginPermission.isLogin.toggle()
+                        }
                     }) {
                         Text("Log out")
                             .bold()
