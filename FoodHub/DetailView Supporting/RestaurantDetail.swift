@@ -14,9 +14,9 @@ struct RestaurantDetail: View {
     @EnvironmentObject var localData: UserData
     @EnvironmentObject var cloudData: SharedData
     @State private var showRating = false
+    @State private var showEdit = false
     @State private var showAlert = false
     @State private var rating = ""
-    
     
     var restaurant: Restaurant
     
@@ -31,7 +31,7 @@ struct RestaurantDetail: View {
                 Image(restaurant.image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .overlay(Image(rating).resizable().frame(width: 60, height: 60).padding().animation(.default), alignment: .bottomTrailing)
+                    .overlay(Image(restaurant.rating).resizable().frame(width: 60, height: 60).padding(), alignment: .bottomTrailing)
                     .overlay(Button(action: {
                             self.presentationMode.wrappedValue.dismiss()
                         }) {
@@ -41,13 +41,14 @@ struct RestaurantDetail: View {
                                 .padding()
                         }, alignment: .topLeading)
                     .overlay(Button(action: {
-                            // goto edit view
-                        
+                            self.showEdit.toggle()
                         }) {
                             Image(systemName: "pencil.circle.fill")
                                 .font(.title)
                                 .foregroundColor(.white)
                             .padding()
+                    }.sheet(isPresented: $showEdit) {
+                        EditView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData)
                     }, alignment: .topTrailing)
                 
                 VStack(alignment: .leading) {
@@ -102,7 +103,7 @@ struct RestaurantDetail: View {
                     }) {
                         standardButton(text: "Rating")
                     }.sheet(isPresented: $showRating) {
-                        RatingView(selectedEmotion: self.$rating)
+                        RatingView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData)
                     }
                 }.padding(.horizontal)
             }

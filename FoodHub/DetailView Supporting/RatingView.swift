@@ -9,7 +9,8 @@
 import SwiftUI
 
 struct RatingView: View {
-    @Binding var selectedEmotion: String
+    var restaurantIndex: Int
+    @EnvironmentObject var localData: UserData
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -21,28 +22,12 @@ struct RatingView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack(alignment: .leading) {
-                Emotion(emotion: "love").onTapGesture {
-                    self.selectedEmotion = "love"
-                    self.presentationMode.wrappedValue.dismiss()
-                }
-                Emotion(emotion: "happy").onTapGesture {
-                    self.selectedEmotion = "happy"
-                    self.presentationMode.wrappedValue.dismiss()
-                }
-                Emotion(emotion: "cool").onTapGesture {
-                    self.selectedEmotion = "cool"
-                    self.presentationMode.wrappedValue.dismiss()
-                }
-                Emotion(emotion: "sad").onTapGesture {
-                    self.selectedEmotion = "sad"
-                    self.presentationMode.wrappedValue.dismiss()
-                }
-                Emotion(emotion: "angry").onTapGesture {
-                    self.selectedEmotion = "angry"
-                    self.presentationMode.wrappedValue.dismiss()
-                }
-            }
-            
+                Emotion(emotion: "love", restaurantIndex: restaurantIndex)
+                Emotion(emotion: "happy", restaurantIndex: restaurantIndex)
+                Emotion(emotion: "cool", restaurantIndex: restaurantIndex)
+                Emotion(emotion: "sad", restaurantIndex: restaurantIndex)
+                Emotion(emotion: "angry", restaurantIndex: restaurantIndex)
+            }            
             VStack {
                 HStack {
                     Spacer()
@@ -69,18 +54,25 @@ struct RatingView: View {
 
 struct RatingView_Previews: PreviewProvider {
     static var previews: some View {
-        RatingView(selectedEmotion: .constant("happy"))
+        RatingView(restaurantIndex: 0)
     }
 }
 
 struct Emotion: View {
     var emotion: String
+    var restaurantIndex: Int
+    @EnvironmentObject var localData: UserData
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
         HStack {
             Image(emotion)
             Text(emotion.capitalized)
                 .font(.largeTitle)
                 .foregroundColor(.white)
+        }.onTapGesture {
+            self.localData.restaurants[self.restaurantIndex].rating = self.emotion
+            self.presentationMode.wrappedValue.dismiss()
         }
     }
 }

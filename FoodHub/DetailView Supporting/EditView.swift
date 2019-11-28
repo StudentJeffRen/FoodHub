@@ -1,17 +1,17 @@
 //
-//  NewName.swift
+//  EditView.swift
 //  FoodHub
 //
-//  Created by JeffRen on 2019/11/25.
+//  Created by JeffRen on 2019/11/27.
 //  Copyright © 2019 JeffRen. All rights reserved.
 //
 
 import SwiftUI
 
-struct NewRestaurantView: View {
+struct EditView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var localData: UserData
-    var newRestaurat = Restaurant()
+    var restaurantIndex: Int
     @State private var name = ""
     @State private var type = ""
     @State private var location = ""
@@ -33,13 +33,13 @@ struct NewRestaurantView: View {
                     Image("save")
                         .padding()
                         .onTapGesture {
-                            self.newRestaurat.name = self.name
-                            self.newRestaurat.type = self.type
-                            self.newRestaurat.location = self.location
-                            self.newRestaurat.phone = self.phone
-                            self.newRestaurat.description = self.description
-                            self.localData.restaurants.append(self.newRestaurat)
-                            print("Create successfully!")
+                            self.localData.restaurants[self.restaurantIndex].name = self.name
+                            self.localData.restaurants[self.restaurantIndex].type = self.type
+                            self.localData.restaurants[self.restaurantIndex].location = self.location
+                            self.localData.restaurants[self.restaurantIndex].phone = self.phone
+                            self.localData.restaurants[self.restaurantIndex].description = self.description
+                            
+                            print("Modify successfully!")
                             self.presentationMode.wrappedValue.dismiss()
                     }
                 }
@@ -54,6 +54,9 @@ struct NewRestaurantView: View {
                     .padding(.horizontal)
                 
                 FormField(fieldName: "Enter Name", fieldValue: $name)
+                    .onAppear{
+                        self.name = self.localData.restaurants[self.restaurantIndex].name
+                }
                 
                 HStack {
                     Text("TYPE:")
@@ -61,6 +64,10 @@ struct NewRestaurantView: View {
                         .padding(.horizontal)
                     
                     Text(type)
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .onAppear {
+                            self.type = self.localData.restaurants[self.restaurantIndex].type
+                    }
                 }
                 
                 HStack {
@@ -107,36 +114,31 @@ struct NewRestaurantView: View {
                             .font(.title)
                     }
                     
-                    FormField(fieldName: "Click the Button or Type", fieldValue: $location)
+                    FormField(fieldName: "Click the Button or Type", fieldValue: $location).onAppear{
+                        self.location = self.localData.restaurants[self.restaurantIndex].location
+                    }
                 }.padding(.horizontal)
                 
                 Text("PHONE:")
                     .font(.system(.title, design: .rounded))
                     .padding(.horizontal)
-                FormField(fieldName: "Enter Phone Number", fieldValue: $phone)
+                FormField(fieldName: "Enter Phone Number", fieldValue: $phone).onAppear{
+                    self.phone = self.localData.restaurants[self.restaurantIndex].phone
+                }
                 
                 Text("DESCRIPTION:")
                     .font(.system(.title, design: .rounded))
                     .padding(.horizontal)
-                FormField(fieldName: "Describe the Restaurant", fieldValue: $description)
+                FormField(fieldName: "Describe the Restaurant", fieldValue: $description).onAppear{
+                    self.description = self.localData.restaurants[self.restaurantIndex].description
+                }
             }
         }
     }
 }
 
-struct NewName_Previews: PreviewProvider {
+struct EditView_Previews: PreviewProvider {
     static var previews: some View {
-        NewRestaurantView()
-    }
-}
-
-struct TypeTag: View {
-    var type: String
-    var body: some View {
-        Text("#\(type)")
-            .padding(EdgeInsets(top: 5, leading: 4, bottom: 5, trailing: 4))
-            .foregroundColor(.white)
-            .background(Color(.lightGray))
-            .cornerRadius(15)
+        EditView(restaurantIndex: 0).environmentObject(UserData(from: restaurantLocalData))
     }
 }
