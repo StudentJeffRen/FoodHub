@@ -15,7 +15,7 @@ struct RestaurantCloudRow: View {
         VStack(alignment: .leading) {
             Image(restaurant.image)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(3/2, contentMode: .fit)
                 .cornerRadius(5)
             
             Text(restaurant.name)

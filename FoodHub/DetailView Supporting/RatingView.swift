@@ -30,14 +30,14 @@ struct RatingView: View {
             }            
             VStack {
                 HStack {
-                    Spacer()
-                    Image(systemName: "xmark.circle.fill")
+                    Image(systemName: "chevron.down.circle.fill")
                         .font(.largeTitle)
                         .foregroundColor(.white)
                         .padding()
                         .onTapGesture {
                             self.presentationMode.wrappedValue.dismiss()
                     }
+                    Spacer()
                 }
                 Spacer()
             }

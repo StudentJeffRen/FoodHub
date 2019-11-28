@@ -32,11 +32,18 @@ struct SearchView: View {
                 .padding(.horizontal)
                 .navigationBarHidden(showCancelButton).animation(.default)
                 
-                List {
-                    ForEach(localData.restaurants.filter{$0.name.localizedCaseInsensitiveContains(searchText) || $0.type.localizedCaseInsensitiveContains(searchText)}, id: \.id) { searchResult in
-                        RestaurantRow(restaurant: searchResult)
+                if searchText == "" {
+                    Spacer()
+                    Text("Hello")
+                    Spacer()
+                } else {
+                    List {
+                        ForEach(localData.restaurants.filter{$0.name.localizedCaseInsensitiveContains(searchText) || $0.type.localizedCaseInsensitiveContains(searchText)}, id: \.id) { searchResult in
+                            RestaurantRow(restaurant: searchResult)
+                        }
                     }
                 }
+                
             }
             .navigationBarTitle("Search")
 //            .navigationBarItems(trailing: Button("test") {

@@ -30,7 +30,7 @@ struct RestaurantDetail: View {
             VStack {
                 Image(restaurant.image)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 300)
                     .overlay(Image(restaurant.rating).resizable().frame(width: 60, height: 60).padding(), alignment: .bottomTrailing)
                     .overlay(Button(action: {
                             self.presentationMode.wrappedValue.dismiss()
@@ -76,14 +76,35 @@ struct RestaurantDetail: View {
                     }
                     
                     HStack {
-                        Image(systemName: "phone")
-                        Text(restaurant.phone)
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Image(systemName: "phone")
+                                Text(restaurant.phone)
+                            }
+                            
+                            HStack {
+                                Image(systemName: "location")
+                                Text(restaurant.location)
+                            }
+                        }
+                        Spacer()
+                        
+                        Button(action: {
+                            self.showRating.toggle()
+                        }) {
+                            Text("Rating")
+                                .font(.system(.body, design: .rounded))
+                                .foregroundColor(.white)
+                                .bold()
+                                .padding()
+                                .background(LinearGradient(gradient: Gradient(colors: [Color(red: 251/255, green: 128/255, blue: 128/255), Color(red: 253/255, green: 193/255, blue: 104/255)]), startPoint: .leading, endPoint: .trailing))
+                                .cornerRadius(10)
+                        }.sheet(isPresented: $showRating) {
+                            RatingView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData)
+                        }
                     }
                     
-                    HStack {
-                        Image(systemName: "location")
-                        Text(restaurant.location)
-                    }
+                    
                     
                     HStack {
                         Image(systemName: "text.badge.star")
@@ -96,14 +117,9 @@ struct RestaurantDetail: View {
                         .frame(height: 1)
                         .background(Color(.separator))
                     
-                    // MapViewsb
-                    
-                    Button(action: {
-                        self.showRating.toggle()
-                    }) {
-                        standardButton(text: "Rating")
-                    }.sheet(isPresented: $showRating) {
-                        RatingView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData)
+                    NavigationLink(destination: FullScreenMapView(location: restaurant.location)) {
+                        MapView(location: restaurant.location)
+                        .frame(height: 200)
                     }
                 }.padding(.horizontal)
             }

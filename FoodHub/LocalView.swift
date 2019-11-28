@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct RestaurantListLocal: View {
+    var locationManager = LocationManager()
     @EnvironmentObject var localData: UserData
     @State private var showNew = false
     
@@ -24,6 +25,7 @@ struct RestaurantListLocal: View {
                             .foregroundColor(.red)
                     }.sheet(isPresented: $showNew) {
                         NewRestaurantView().environmentObject(self.localData)
+                            .environmentObject(self.locationManager)
                     }
                 )
         }

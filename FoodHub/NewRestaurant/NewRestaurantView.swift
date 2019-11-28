@@ -11,12 +11,20 @@ import SwiftUI
 struct NewRestaurantView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var localData: UserData
+    @EnvironmentObject var locationManager: LocationManager
     var newRestaurat = Restaurant()
     @State private var name = ""
     @State private var type = ""
     @State private var location = ""
     @State private var phone = ""
     @State private var description = ""
+    
+    var userLatitude: String {
+        return "\(locationManager.lastLocation?.coordinate.latitude ?? 0)"
+    }
+    var userLongitude: String {
+        return "\(locationManager.lastLocation?.coordinate.longitude ?? 0)"
+    }
     
     var body: some View {
         ZStack {
@@ -101,12 +109,11 @@ struct NewRestaurantView: View {
                 
                 HStack {
                     Button(action: {
-                        // get current location
+                        self.location = self.userLatitude + self.userLongitude
                     }) {
                         Image(systemName: "location.fill")
                             .font(.title)
                     }
-                    
                     FormField(fieldName: "Click the Button or Type", fieldValue: $location)
                 }.padding(.horizontal)
                 

@@ -2,7 +2,7 @@
 //  MapView.swift
 //  FoodHub
 //
-//  Created by JeffRen on 2019/10/12.
+//  Created by JeffRen on 2019/11/28.
 //  Copyright © 2019 JeffRen. All rights reserved.
 //
 
@@ -10,22 +10,41 @@ import SwiftUI
 import MapKit
 
 struct MapView: UIViewRepresentable {
-    var coordinate = CLLocationCoordinate2D(latitude: 113.539166, longitude: 22.2175)
-
+    var location: String
+    
     func makeUIView(context: Context) -> MKMapView {
         MKMapView(frame: .zero)
     }
-
+    
     func updateUIView(_ view: MKMapView, context: Context) {
-        let span = MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-        let region = MKCoordinateRegion(center: coordinate, span: span)
-        view.setRegion(region, animated: true)
+        let geoCoder = CLGeocoder()
+        
+        print(location)
+        
+        geoCoder.geocodeAddressString(location, completionHandler: { placemarks, error in
+            if let error = error {
+                print(error.localizedDescription)
+                return
+            }
+            
+            if let placemarks = placemarks {
+                let placemark = placemarks[0]
+                let annotation = MKPointAnnotation()
+                
+                if let location = placemark.location {
+                    annotation.coordinate = location.coordinate
+                    view.addAnnotation(annotation)
+                    
+                    let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: 250, longitudinalMeters: 250)
+                    view.setRegion(region, animated: true)
+                }
+            }
+        })
     }
 }
 
 struct MapView_Previews: PreviewProvider {
     static var previews: some View {
-        MapView()
+        MapView(location: "Macau University of Science and Technology")
     }
 }
-
