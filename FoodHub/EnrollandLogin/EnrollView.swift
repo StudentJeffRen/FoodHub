@@ -184,6 +184,7 @@ struct FormField: View {
                     .padding(.horizontal)
             } else {
                 TextField(fieldName, text: $fieldValue)
+                    .minimumScaleFactor(0.01)
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .padding(.horizontal)
             }
