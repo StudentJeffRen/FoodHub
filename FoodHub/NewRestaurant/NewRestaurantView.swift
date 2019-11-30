@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct NewRestaurantView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -19,11 +20,11 @@ struct NewRestaurantView: View {
     @State private var phone = ""
     @State private var description = ""
     
-    var userLatitude: String {
-        return "\(locationManager.lastLocation?.coordinate.latitude ?? 0)"
+    var userLatitude: CLLocationDegrees {
+        return locationManager.lastLocation?.coordinate.latitude ?? 0
     }
-    var userLongitude: String {
-        return "\(locationManager.lastLocation?.coordinate.longitude ?? 0)"
+    var userLongitude: CLLocationDegrees {
+        return locationManager.lastLocation?.coordinate.longitude ?? 0
     }
     
     var body: some View {
@@ -109,7 +110,9 @@ struct NewRestaurantView: View {
                 
                 HStack {
                     Button(action: {
-                        self.location = self.userLatitude + self.userLongitude
+                        self.getAddressFromLatLon(latitude: self.userLatitude, longitude: self.userLongitude) { addressString in
+                            self.location = addressString
+                        }
                     }) {
                         Image(systemName: "location.fill")
                             .font(.title)
@@ -129,6 +132,42 @@ struct NewRestaurantView: View {
             }
         }
     }
+    
+    func getAddressFromLatLon(latitude: CLLocationDegrees, longitude: CLLocationDegrees, completion: @escaping(String)->()) {
+        let geoCoder: CLGeocoder = CLGeocoder()
+        
+        let location: CLLocation = CLLocation(latitude: latitude, longitude: longitude)
+        
+        geoCoder.reverseGeocodeLocation(location, completionHandler:
+            {(placemarks, error) in
+                if (error != nil)
+                {
+                    print("reverse geodcode fail: \(error!.localizedDescription)")
+                }
+                let pm = placemarks! as [CLPlacemark]
+                
+                if pm.count > 0 {
+                    let pm = placemarks![0]
+                    var addressString : String = ""
+                    if pm.thoroughfare != nil {
+                        addressString = addressString + pm.thoroughfare! + ", "
+                    }
+                    if pm.subLocality != nil {
+                        addressString = addressString + pm.subLocality! + ", "
+                    }
+                    if pm.locality != nil {
+                        addressString = addressString + pm.locality! + ", "
+                    }
+                    if pm.country != nil {
+                        addressString = addressString + pm.country!
+                    }
+                    
+                    print(addressString)
+                    completion(addressString)
+                }
+        })
+        
+    }
 }
 
 struct NewName_Previews: PreviewProvider {
@@ -147,3 +186,5 @@ struct TypeTag: View {
             .cornerRadius(15)
     }
 }
+
+
