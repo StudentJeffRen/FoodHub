@@ -72,6 +72,16 @@ struct Emotion: View {
                 .foregroundColor(.white)
         }.onTapGesture {
             self.localData.restaurants[self.restaurantIndex].rating = self.emotion
+            switch self.emotion {
+            case "love": self.localData.restaurants[self.restaurantIndex].ratingRow[0] += 1
+            case "happy": self.localData.restaurants[self.restaurantIndex].ratingRow[1] += 1
+            case "cool": self.localData.restaurants[self.restaurantIndex].ratingRow[2] += 1
+            case "sad":
+                self.localData.restaurants[self.restaurantIndex].ratingRow[3] += 1
+            case "angry": self.localData.restaurants[self.restaurantIndex].ratingRow[4] += 1
+            default:
+                break
+            }
             self.presentationMode.wrappedValue.dismiss()
         }
     }

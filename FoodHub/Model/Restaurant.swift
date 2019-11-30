@@ -19,6 +19,8 @@ class Restaurant: Identifiable {
     var rating: String
     var phone: String
     var description: String
+    var ratingRow: [Int] = [0, 0, 0, 0, 0]
+    var allowRating = true
     
     init(name: String, type: String, location: String, image: String, rating: String, phone: String, description: String) {
         self.name = name
@@ -40,7 +42,7 @@ var restaurantLocalData = [
     Restaurant(name: "Lao Sichuan", type: "Chuan", location: "Zhuhai", image: "Wechat", rating: "happy", phone: "6699", description: "A simple restaurant")
 ]
 var restaurantCloudData: [Restaurant] = [
-    Restaurant(name: "Lao Guangzhou", type: "Yue", location: "America", image: "Wechat", rating: "happy", phone: "6599", description: "A good restaurant"),
+    Restaurant(name: "Lao Guangzhou", type: "Yue", location: "Taiwan", image: "Wechat", rating: "happy", phone: "6599", description: "A good restaurant"),
     Restaurant(name: "Lao Chongqin", type: "Yu", location: "China", image: "restaurant", rating: "happy", phone: "6699", description: "A simple restaurant")
 ]
 var allRestaurant = restaurantLocalData + restaurantCloudData
