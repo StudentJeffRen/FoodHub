@@ -35,7 +35,7 @@ struct MapView: UIViewRepresentable {
                     annotation.coordinate = location.coordinate
                     view.addAnnotation(annotation)
                     
-                    let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: 250, longitudinalMeters: 250)
+                    let region = MKCoordinateRegion(center: annotation.coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
                     view.setRegion(region, animated: true)
                 }
             }
