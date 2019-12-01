@@ -21,6 +21,7 @@ class Restaurant: Identifiable {
     var description: String
     var ratingRow: [Int] = [0, 0, 0, 0, 0]
     var allowRating = true
+    var comments: [String] = []
     
     init(name: String, type: String, location: String, image: String, rating: String, phone: String, description: String) {
         self.name = name

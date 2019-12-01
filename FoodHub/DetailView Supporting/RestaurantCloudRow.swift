@@ -9,14 +9,21 @@
 import SwiftUI
 
 struct RestaurantCloudRow: View {
+    @EnvironmentObject var cloudData: SharedData
     var restaurant: Restaurant
+    
     private let emojiChoices = ["love", "happy", "cool", "sad", "angry"]
     @State private var currentRating = [0, 0, 0, 0, 0]
+    let userName = "Jeff"
+    @State var testComment: [String] = []
+    @State var newComment = ""
+
     @State private var showAlert = false
     @State private var showDetail = false
-    let userName = "Jeff"
-    @State var testComment = ["hello", "thank you", "do you like me?"]
-    @State var newComment = ""
+    
+    var restaurantIndex: Int {
+        cloudData.sharedRestaurants.firstIndex(where: {$0.id == restaurant.id})!
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -70,6 +77,7 @@ struct RestaurantCloudRow: View {
                 TextField("Add a comment", text: $newComment)
                 Text("Send").onTapGesture {
                     self.testComment.append(self.newComment)
+                    self.restaurant.comments.append(self.newComment)
                     self.newComment = ""
                 }
             }
@@ -85,12 +93,13 @@ struct RestaurantCloudRow: View {
         .padding()
         .onAppear{
             self.currentRating = self.restaurant.ratingRow
+            self.testComment = self.restaurant.comments
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Warning"), message: Text("You have already rated!"), dismissButton: .default(Text("OK")))
         }
         .sheet(isPresented: $showDetail) {
-            CommentView(restaurant: self.restaurant)
+            CloudDetailView(restaurant: self.restaurant)
         }
     }
 }

@@ -16,6 +16,7 @@ struct RestaurantListCloud: View {
         NavigationView {
             List(cloudData.sharedRestaurants) { restaurant in
                 RestaurantCloudRow(restaurant: restaurant)
+                    .environmentObject(self.cloudData)
             }
             
             .navigationBarTitle(Text("Cloud"))
