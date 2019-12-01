@@ -31,25 +31,28 @@ struct NewRestaurantView: View {
         ZStack {
             VStack {
                 HStack {
-                    Image(systemName: "chevron.down.circle.fill")
+                    Button(action: {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.down.circle.fill")
                         .font(.title)
                         .foregroundColor(.gray)
                         .padding()
-                        .onTapGesture {
-                            self.presentationMode.wrappedValue.dismiss()
                     }
                     Spacer()
-                    Image("save")
+                    
+                    Button(action: {
+                        self.newRestaurat.name = self.name
+                        self.newRestaurat.type = self.type
+                        self.newRestaurat.location = self.location
+                        self.newRestaurat.phone = self.phone
+                        self.newRestaurat.description = self.description
+                        self.localData.restaurants.append(self.newRestaurat)
+                        print("Create successfully!")
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image("save")
                         .padding()
-                        .onTapGesture {
-                            self.newRestaurat.name = self.name
-                            self.newRestaurat.type = self.type
-                            self.newRestaurat.location = self.location
-                            self.newRestaurat.phone = self.phone
-                            self.newRestaurat.description = self.description
-                            self.localData.restaurants.append(self.newRestaurat)
-                            print("Create successfully!")
-                            self.presentationMode.wrappedValue.dismiss()
                     }
                 }
                 Spacer()
@@ -166,7 +169,6 @@ struct NewRestaurantView: View {
                     completion(addressString)
                 }
         })
-        
     }
 }
 

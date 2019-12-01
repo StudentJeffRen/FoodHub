@@ -22,25 +22,29 @@ struct EditView: View {
         ZStack {
             VStack {
                 HStack {
-                    Image(systemName: "chevron.down.circle.fill")
+                    Button(action: {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.down.circle.fill")
                         .font(.title)
                         .foregroundColor(.gray)
                         .padding()
-                        .onTapGesture {
-                            self.presentationMode.wrappedValue.dismiss()
                     }
+
                     Spacer()
-                    Image("save")
+                    
+                    Button(action: {
+                        self.localData.restaurants[self.restaurantIndex].name = self.name
+                        self.localData.restaurants[self.restaurantIndex].type = self.type
+                        self.localData.restaurants[self.restaurantIndex].location = self.location
+                        self.localData.restaurants[self.restaurantIndex].phone = self.phone
+                        self.localData.restaurants[self.restaurantIndex].description = self.description
+                        
+                        print("Modify successfully!")
+                        self.presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image("save")
                         .padding()
-                        .onTapGesture {
-                            self.localData.restaurants[self.restaurantIndex].name = self.name
-                            self.localData.restaurants[self.restaurantIndex].type = self.type
-                            self.localData.restaurants[self.restaurantIndex].location = self.location
-                            self.localData.restaurants[self.restaurantIndex].phone = self.phone
-                            self.localData.restaurants[self.restaurantIndex].description = self.description
-                            
-                            print("Modify successfully!")
-                            self.presentationMode.wrappedValue.dismiss()
                     }
                 }
                 Spacer()
