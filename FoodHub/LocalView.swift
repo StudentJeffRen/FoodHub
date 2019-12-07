@@ -22,16 +22,15 @@ struct RestaurantListLocal: View {
                     Button(action: { self.showNew = true }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title)
-                            .foregroundColor(.red)
+                            .foregroundColor(.orange)
                     }.sheet(isPresented: $showNew) {
                         NewRestaurantView().environmentObject(self.localData)
                             .environmentObject(self.locationManager)
                     }
                 )
+            .environmentObject(self.locationManager)
         }
-        
     }
-    
 }
 
 struct RestaurantListLocal_Previews: PreviewProvider {
