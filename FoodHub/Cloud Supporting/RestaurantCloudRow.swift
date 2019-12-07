@@ -10,6 +10,7 @@ import SwiftUI
 
 struct RestaurantCloudRow: View {
     @EnvironmentObject var cloudData: SharedData
+    @EnvironmentObject var localData: UserData
     var restaurant: Restaurant
     
     private let emojiChoices = ["love", "happy", "cool", "sad", "angry"]
@@ -20,6 +21,7 @@ struct RestaurantCloudRow: View {
 
     @State private var showAlert = false
     @State private var showDetail = false
+    @State private var isCollect = false
     
     var restaurantIndex: Int {
         cloudData.sharedRestaurants.firstIndex(where: {$0.id == restaurant.id})!
@@ -32,11 +34,23 @@ struct RestaurantCloudRow: View {
                 .aspectRatio(3/2, contentMode: .fit)
                 .cornerRadius(5)
             
-            Text(restaurant.name)
-                .font(.system(.title, design: .rounded))
-                .fontWeight(.black)
-                .lineLimit(3)
-                .padding(.bottom, 0)
+            HStack {
+                Text(restaurant.name)
+                    .font(.system(.title, design: .rounded))
+                    .fontWeight(.black)
+                    .lineLimit(3)
+                    .padding(.bottom, 0)
+                
+                Image(systemName: isCollect ? "star.fill" : "star")
+                    .foregroundColor(isCollect ? .yellow : .black)
+                    .onTapGesture {
+                        if(self.isCollect == false) {
+                            self.localData.restaurants.append(self.restaurant)
+                        }
+                        self.isCollect = true
+                }
+            }
+            
             
             Text(restaurant.type)
                 .font(.subheadline)
@@ -75,11 +89,18 @@ struct RestaurantCloudRow: View {
             HStack {
                 Image(systemName: "text.bubble")
                 TextField("Add a comment", text: $newComment)
-                Text("Send").onTapGesture {
-                    self.testComment.append(self.newComment)
-                    self.restaurant.comments.append(self.newComment)
-                    self.newComment = ""
+                
+                Image(systemName: "paperplane")
+                    .foregroundColor(.black)
+                    .onTapGesture {
+                        if(self.newComment != "") {
+                            self.testComment.append(self.newComment)
+                            self.restaurant.comments.append(self.newComment)
+                            self.newComment = ""
+                        }
                 }
+                .animation(.default)
+                
             }
             
             VStack(alignment: .leading, spacing: 5) {
@@ -87,8 +108,6 @@ struct RestaurantCloudRow: View {
                     Text(self.userName + ": " + comment)
                 }
             }
-            
-            
         }
         .padding()
         .onAppear{
