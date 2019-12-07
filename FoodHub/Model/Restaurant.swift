@@ -21,6 +21,7 @@ class Restaurant: Identifiable {
     var description: String
     var ratingRow: [Int] = [0, 0, 0, 0, 0]
     var allowRating = true
+    var isCloud = false
     var comments: [String] = []
     
     init(name: String, type: String, location: String, image: String, rating: String, phone: String, description: String) {
@@ -34,7 +35,7 @@ class Restaurant: Identifiable {
     }
     
     convenience init() {
-        self.init(name: "", type: "", location: "", image: "", rating: "", phone: "", description: "")
+        self.init(name: "", type: "", location: "", image: "", rating: "", phone: "Don't know", description: "Nothing to say")
     }
 }
 
