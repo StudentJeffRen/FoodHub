@@ -10,11 +10,12 @@ import SwiftUI
 
 struct RestaurantLocalList: View {
     @EnvironmentObject var localData: UserData
+    @EnvironmentObject var locationManager: LocationManager
     
     var body: some View {
         List {
             ForEach(localData.restaurants) { restaurant in
-                NavigationLink(destination: RestaurantDetail(restaurant: restaurant)) {
+                NavigationLink(destination: RestaurantDetail(restaurant: restaurant).environmentObject(self.locationManager)) {
                     RestaurantRow(restaurant: restaurant)
                 }
             }.onDelete(perform: delete)
@@ -59,5 +60,6 @@ struct RestaurantList_Previews: PreviewProvider {
     static var previews: some View {
             RestaurantLocalList()
             .environmentObject(UserData(from: restaurantLocalData))
+            .environmentObject(LocationManager())
     }
 }

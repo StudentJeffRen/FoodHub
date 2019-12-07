@@ -7,9 +7,11 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct EditView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var locationManager: LocationManager
     @EnvironmentObject var localData: UserData
     var restaurantIndex: Int
     @State private var name = ""
@@ -17,6 +19,13 @@ struct EditView: View {
     @State private var location = ""
     @State private var phone = ""
     @State private var description = ""
+    
+    var userLatitude: CLLocationDegrees {
+        return locationManager.lastLocation?.coordinate.latitude ?? 0
+    }
+    var userLongitude: CLLocationDegrees {
+        return locationManager.lastLocation?.coordinate.longitude ?? 0
+    }
     
     var body: some View {
         ZStack {
@@ -26,11 +35,11 @@ struct EditView: View {
                         self.presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "chevron.down.circle.fill")
-                        .font(.title)
-                        .foregroundColor(.gray)
-                        .padding()
+                            .font(.title)
+                            .foregroundColor(.gray)
+                            .padding()
                     }
-
+                    
                     Spacer()
                     
                     Button(action: {
@@ -44,13 +53,11 @@ struct EditView: View {
                         self.presentationMode.wrappedValue.dismiss()
                     }) {
                         Image("save")
-                        .padding()
+                            .padding()
                     }
                 }
                 Spacer()
             }
-            
-            
             
             VStack(alignment: .leading) {
                 Text("NAME:")
@@ -113,6 +120,9 @@ struct EditView: View {
                 HStack {
                     Button(action: {
                         // get current location
+                        self.getAddressFromLatLon(latitude: self.userLatitude, longitude: self.userLongitude) { addressString in
+                            self.location = addressString
+                        }
                     }) {
                         Image(systemName: "location.fill")
                             .font(.title)
@@ -138,6 +148,41 @@ struct EditView: View {
                 }
             }
         }
+    }
+        
+    func getAddressFromLatLon(latitude: CLLocationDegrees, longitude: CLLocationDegrees, completion: @escaping(String)->()) {
+        let geoCoder: CLGeocoder = CLGeocoder()
+        
+        let location: CLLocation = CLLocation(latitude: latitude, longitude: longitude)
+        
+        geoCoder.reverseGeocodeLocation(location, completionHandler:
+            {(placemarks, error) in
+                if (error != nil)
+                {
+                    print("reverse geodcode fail: \(error!.localizedDescription)")
+                }
+                let pm = placemarks! as [CLPlacemark]
+                
+                if pm.count > 0 {
+                    let pm = placemarks![0]
+                    var addressString : String = ""
+                    if pm.thoroughfare != nil {
+                        addressString = addressString + pm.thoroughfare! + ", "
+                    }
+                    if pm.subLocality != nil {
+                        addressString = addressString + pm.subLocality! + ", "
+                    }
+                    if pm.locality != nil {
+                        addressString = addressString + pm.locality! + ", "
+                    }
+                    if pm.country != nil {
+                        addressString = addressString + pm.country!
+                    }
+                    
+                    print(addressString)
+                    completion(addressString)
+                }
+        })
     }
 }
 
