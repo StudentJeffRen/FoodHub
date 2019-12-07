@@ -10,7 +10,9 @@ import Foundation
 import Combine
 
 class UserRegistrationViewModel: ObservableObject {
+    
     @Published var username = ""
+    @Published var email = ""
     @Published var password = ""
     @Published var passwordConfirm = ""
     
@@ -22,14 +24,6 @@ class UserRegistrationViewModel: ObservableObject {
     private var cancellableSet: Set<AnyCancellable> = []
     
     init() {
-        $username
-            .receive(on: RunLoop.main)
-            .map { username in
-                return username.count >= 4
-            }
-            .assign(to: \.isUsernameLengthValid, on: self)
-            .store(in: &cancellableSet)
-        
         $password
             .receive(on: RunLoop.main)
             .map { password in

@@ -7,22 +7,17 @@
 //
 
 import Foundation
-import CoreData
 
-
-public class User: NSManagedObject, Identifiable {
-    @NSManaged public var userId: String?
-    @NSManaged public var password: String?
-}
-
-extension User {
-    // ❇️ The @FetchRequest property wrapper in the ContentView will call this function
-    static func allUsersFetchRequest() -> NSFetchRequest<User> {
-        let request: NSFetchRequest<User> = User.fetchRequest() as! NSFetchRequest<User>
-        
-        // ❇️ The @FetchRequest property wrapper in the ContentView requires a sort descriptor
-        request.sortDescriptors = [NSSortDescriptor(key: "userId", ascending: true)]
-          
-        return request
+class User {
+    var uid: String
+    var email: String?
+    var displayName: String?
+    
+    init(uid: String, displayName: String?, email: String?) {
+        self.uid = uid
+        self.email = email
+        self.displayName = displayName
     }
 }
+
+

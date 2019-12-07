@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct AboutView: View {
-    @EnvironmentObject var loginPermission: UserAuth
+    @EnvironmentObject var session: SessionStore
     
     var body: some View {
         NavigationView {
@@ -41,7 +41,7 @@ struct AboutView: View {
                 Section{
                     Button(action: {
                         withAnimation {
-                            self.loginPermission.isLogin.toggle()
+                            print("Log out: \(self.session.signOut())")
                         }
                     }) {
                         Text("Log out")
