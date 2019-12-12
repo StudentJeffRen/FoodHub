@@ -18,8 +18,8 @@ struct Tab: View {
             RestaurantListLocal()
                 
                 .tabItem {
-                    Image(systemName: "folder")
-                    Text("Local") }.tag(1)
+                    Image(systemName: "house")
+                    Text("My") }.tag(1)
             
             RestaurantListCloud()
                 .tabItem {
@@ -32,7 +32,7 @@ struct Tab: View {
                     Text("Search") }.tag(3)
             
             AboutView().tabItem {
-                Image(systemName: "tag")
+                Image(systemName: "info")
                 Text("About") }.tag(4)
         }
         
