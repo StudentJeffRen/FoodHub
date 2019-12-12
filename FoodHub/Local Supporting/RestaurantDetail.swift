@@ -34,28 +34,17 @@ struct RestaurantDetail: View {
     var body: some View {
         ScrollView {
             VStack {
-                Image(restaurant.image)
-                    .resizable()
-                    .frame(height: 300)
-                    .overlay(Image(restaurant.rating).resizable().frame(width: 60, height: 60).padding(), alignment: .bottomTrailing)
-                    .overlay(Button(action: {
-                            self.presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.white)
-                                .padding()
-                        }, alignment: .topLeading)
-                    .overlay(Button(action: {
-                            self.showEdit.toggle()
-                        }) {
-                            Image(systemName: "pencil.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.white)
-                            .padding()
-                    }.sheet(isPresented: $showEdit) {
-                        EditView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData).environmentObject(self.locationManager)
-                    }, alignment: .topTrailing)
+                if(restaurant.realImage != nil) {
+                    restaurant.realImage!
+                        .resizable()
+                        .frame(height: 300)
+                        .overlay(Image(restaurant.rating).resizable().frame(width: 60, height: 60).padding(), alignment: .bottomTrailing)
+                } else {
+                    Image(restaurant.image)
+                        .resizable()
+                        .frame(height: 300)
+                        .overlay(Image(restaurant.rating).resizable().frame(width: 60, height: 60).padding(), alignment: .bottomTrailing)
+                }
                 
                 VStack(alignment: .leading) {
                     HStack {
@@ -131,6 +120,25 @@ struct RestaurantDetail: View {
                 }.padding(.horizontal)
             }
         }
+        .overlay(Button(action: {
+            self.presentationMode.wrappedValue.dismiss()
+        }) {
+            Image(systemName: "chevron.left.circle.fill")
+                .font(.title)
+                .foregroundColor(.white)
+                .padding()
+        }, alignment: .topLeading)
+            .overlay(Button(action: {
+                self.showEdit.toggle()
+            }) {
+                Image(systemName: "pencil.circle.fill")
+                    .font(.title)
+                    .foregroundColor(.white)
+                    .padding()
+            }
+            .sheet(isPresented: $showEdit) {
+                EditView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData).environmentObject(self.locationManager)
+            }, alignment: .topTrailing)
         .navigationBarTitle("")
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
@@ -169,7 +177,7 @@ struct RestaurantDetail: View {
 
 struct RestaurantDetail_Previews: PreviewProvider {
     static var previews: some View {
-        RestaurantDetail(restaurant: Restaurant(name: "Lao Changsha", type: "湘菜", location: "Macau", image: "restaurant", rating: "sad", phone: "6599", description: "A good place"))
+        RestaurantDetail(restaurant: Restaurant(name: "Lao Changsha", type: "湘菜", location: "Macau", image: "restaurant", rating: "sad", phone: "6599", description: "A good place", ratingRow: [0, 0, 0, 0, 0]))
         
     }
 }

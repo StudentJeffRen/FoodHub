@@ -33,10 +33,18 @@ struct RestaurantRow: View {
     var body: some View {
         HStack {
             HStack(alignment: .top) {
-                Image(restaurant.image)
-                    .resizable()
-                    .frame(width: 75, height: 75)
-                    .cornerRadius(5)
+                if(restaurant.realImage != nil) {
+                    restaurant.realImage!
+                        .resizable()
+                        .frame(width: 75, height: 75)
+                        .cornerRadius(5)
+                } else {
+                    Image(restaurant.image)
+                        .resizable()
+                        .frame(width: 75, height: 75)
+                        .cornerRadius(5)
+                }
+                
                 VStack(alignment: .leading, spacing: 4) {
                     Text(restaurant.name)
                         .font(.headline)
