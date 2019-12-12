@@ -16,19 +16,38 @@ struct RestaurantListLocal: View {
     var body: some View {
         
         NavigationView {
-            RestaurantLocalList()
+            if(localData.restaurants.count == 0) {
+                Image("empty")
+                
                 .navigationBarTitle(Text("My Restaurants"))
                 .navigationBarItems(trailing:
-                    Button(action: { self.showNew = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.orange)
-                    }.sheet(isPresented: $showNew) {
-                        NewRestaurantView().environmentObject(self.localData)
-                            .environmentObject(self.locationManager)
-                    }
+                        Button(action: { self.showNew = true }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.orange)
+                        }.sheet(isPresented: $showNew) {
+                            NewRestaurantView().environmentObject(self.localData)
+                                .environmentObject(self.locationManager)
+                        }
                 )
-            .environmentObject(self.locationManager)
+                .environmentObject(self.locationManager)
+            } else {
+                RestaurantLocalList()
+                .navigationBarTitle(Text("My Restaurants"))
+                .navigationBarItems(trailing:
+                        Button(action: { self.showNew = true }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title)
+                                .foregroundColor(.orange)
+                        }.sheet(isPresented: $showNew) {
+                            NewRestaurantView().environmentObject(self.localData)
+                                .environmentObject(self.locationManager)
+                        }
+                )
+                .environmentObject(self.locationManager)
+            }
+            
+            
         }
     }
 }

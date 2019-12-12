@@ -31,6 +31,7 @@ struct NewRestaurantView: View {
     }
     
     var body: some View {
+        
         ZStack {
             VStack(alignment: .leading) {
                 Group {
@@ -40,15 +41,11 @@ struct NewRestaurantView: View {
                 Group {
                     Text("NAME:")
                         .font(.system(.title, design: .rounded))
-                        .padding(.horizontal)
-                    
                     FormField(fieldName: "Enter Name", fieldValue: $name)
                     
                     HStack {
                         Text("TYPE:")
                             .font(.system(.title, design: .rounded))
-                            .padding(.horizontal)
-                        
                         Text(type)
                     }
                     
@@ -82,11 +79,11 @@ struct NewRestaurantView: View {
                         }) {
                             TypeTag(type: "Lo Mein")
                         }
-                    }.padding()
+                    }.padding(.vertical)
                     
                     Text("ADDRESS:")
                         .font(.system(.title, design: .rounded))
-                        .padding(.horizontal)
+                    
                     
                     HStack {
                         Button(action: {
@@ -98,18 +95,18 @@ struct NewRestaurantView: View {
                                 .font(.title)
                         }
                         FormField(fieldName: "Click the Button or Type", fieldValue: $location)
-                    }.padding(.horizontal)
+                    }
                     
                     Text("PHONE:")
                         .font(.system(.title, design: .rounded))
-                        .padding(.horizontal)
+                    
                     FormField(fieldName: "Enter Phone Number(Optional)", fieldValue: $phone)
                     
                     Text("DESCRIPTION:")
                         .font(.system(.title, design: .rounded))
-                        .padding(.horizontal)
+                    
                     FormField(fieldName: "Describe the Restaurant(Optional)", fieldValue: $description)
-                }
+                }.padding(.horizontal)
                 
                 Group {
                     HStack {
@@ -142,7 +139,7 @@ struct NewRestaurantView: View {
                     Spacer()
                     
                     Button(action: {
-                        if(!(self.name == "" && self.type == "" && self.location == "")) {
+                        if(self.name == "" || self.type == "" || self.location == "") {
                             // 必要信息不全
                             self.showAlert.toggle()
                         } else if(self.phone == "" || self.description == "") {
@@ -152,6 +149,9 @@ struct NewRestaurantView: View {
                                 self.newRestaurat.type = self.type
                                 self.newRestaurat.location = self.location
                                 self.newRestaurat.description = self.description
+                                if(self.image != nil) {
+                                    self.newRestaurat.realImage = self.image!
+                                }
                                 self.localData.restaurants.append(self.newRestaurat)
                                 self.presentationMode.wrappedValue.dismiss()
                             } else if(self.phone != "") {
@@ -159,12 +159,18 @@ struct NewRestaurantView: View {
                                 self.newRestaurat.type = self.type
                                 self.newRestaurat.location = self.location
                                 self.newRestaurat.phone = self.phone
+                                if(self.image != nil) {
+                                    self.newRestaurat.realImage = self.image!
+                                }
                                 self.localData.restaurants.append(self.newRestaurat)
                                 self.presentationMode.wrappedValue.dismiss()
                             } else {
                                 self.newRestaurat.name = self.name
                                 self.newRestaurat.type = self.type
                                 self.newRestaurat.location = self.location
+                                if(self.image != nil) {
+                                    self.newRestaurat.realImage = self.image!
+                                }
                                 self.localData.restaurants.append(self.newRestaurat)
                                 self.presentationMode.wrappedValue.dismiss()
                             }
@@ -175,6 +181,9 @@ struct NewRestaurantView: View {
                             self.newRestaurat.location = self.location
                             self.newRestaurat.phone = self.phone
                             self.newRestaurat.description = self.description
+                            if(self.image != nil) {
+                                self.newRestaurat.realImage = self.image!
+                            }
                             self.localData.restaurants.append(self.newRestaurat)
                             print("Create successfully!")
                             self.presentationMode.wrappedValue.dismiss()
@@ -185,7 +194,7 @@ struct NewRestaurantView: View {
                             .font(.title)
                             .foregroundColor((image == nil) ? .black : .white)
                             .padding()
-                            
+                        
                     }
                 }
                 Spacer()
@@ -196,9 +205,11 @@ struct NewRestaurantView: View {
                     .transition(.move(edge: .bottom))
             }
         }
+        .resignKeyboardOnDragGesture()
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Warning"), message: Text("Fill in all necessary field"), dismissButton: .default(Text("OK")))
         }
+        
     }
     
     func getAddressFromLatLon(latitude: CLLocationDegrees, longitude: CLLocationDegrees, completion: @escaping(String)->()) {
@@ -251,5 +262,6 @@ struct TypeTag: View {
             .foregroundColor(.white)
             .background(Color(.lightGray))
             .cornerRadius(15)
+            
     }
 }

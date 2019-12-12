@@ -34,7 +34,9 @@ struct SearchView: View {
                 
                 if searchText == "" {
                     Spacer()
-                    Text("Hello")
+                    Text("Search restaurant name or type")
+                        .font(.system(.body, design: .rounded))
+                        .bold()
                     Spacer()
                 } else {
                     List {
