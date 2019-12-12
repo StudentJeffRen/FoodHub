@@ -7,35 +7,51 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct AboutView: View {
     @EnvironmentObject var session: SessionStore
+    @State var name: String = "Synchronizing Your Name..."
     
+    var email: String {
+        if let email = session.session?.email {
+            return email
+        } else {
+            return "Unknown"
+        }
+    }
+
     var body: some View {
         NavigationView {
             Form {
                 Section {
                     Image("foodpin-logo")
-                        .offset(x: 110, y: 0)
-                        .padding(EdgeInsets(top: 50, leading: 20, bottom: 50, trailing: 20))
+                        .resizable()
+
+                    VStack(alignment: .leading){
+                        Text(name)
+                            .font(.title)
+                        Spacer()
+                        Text(email)
+                            .font(.subheadline)
+                    }.padding()
                     
-                    informationRow()
                 }
                 
                 Section(header: Text("Follow us").font(.title)) {
                     
                     NavigationLink(destination: WeChatView()) {
-                        shareRow(social: "Wechat")
+                        shareRow(social: "WeChat")
                     }
                     
-                    NavigationLink(destination: WebView(request: URLRequest(url: URL(string: "https://www.apple.com")!))) {
+                    NavigationLink(destination: WebView(request: URLRequest(url: URL(string: "https://github.com/StudentJeffRen")!))) {
                         shareRow(social: "Github")
-                            
                     }
                     
-                    NavigationLink(destination: WebView(request: URLRequest(url: URL(string: "jeffren.top")!))) {
+                    NavigationLink(destination: WebView(request: URLRequest(url: URL(string: "http://jeffren.top")!))) {
                         shareRow(social: "Blog")
                     }
+                    
                 }
                 
                 Section{
@@ -52,12 +68,20 @@ struct AboutView: View {
             }
             .navigationBarTitle("About")
         }
+        .onAppear{
+            let user = Auth.auth().currentUser
+            if user?.displayName != nil {
+                self.name = (user?.displayName)!
+            } else {
+                print("Something error")
+            }
+        }
     }
 }
 
 struct AboutView_Previews: PreviewProvider {
     static var previews: some View {
-        AboutView()
+        AboutView().environmentObject(SessionStore())
     }
 }
 
@@ -68,39 +92,13 @@ struct shareRow: View {
         HStack {
             Image(social)
                 .resizable()
-                .frame(width: 40, height: 40)
-                .clipShape(Circle())
+                .frame(width: 30, height: 30)
+                .cornerRadius(5)
             HStack {
                 VStack {
                     Text(social)
                 }
             }
         }
-    }
-}
-
-struct informationRow: View {
-    var body: some View {
-        HStack {
-            Image("jeff")
-                .resizable()
-                .frame(width: 60, height: 60)
-                .clipShape(Circle())
-            
-            VStack (alignment: .leading){
-                Text("Jeff")
-                    .font(.title)
-                HStack {
-                    Text("ID")
-                        .font(.subheadline)
-                    Spacer()
-                    Text("17765995555")
-                        .font(.subheadline)
-                }
-                .font(.subheadline)
-            }
-            
-        }
-        .padding()
     }
 }
