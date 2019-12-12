@@ -16,9 +16,6 @@ import FirebaseAuth
  4. 密码太弱
  5. 邮箱已注册
  */
-enum AlertType {
-    case SUCCESS, FAIL, DUPLICATE
-}
 
 struct EnrollView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -27,127 +24,124 @@ struct EnrollView: View {
     @ObservedObject private var userRegistrationViewModel = UserRegistrationViewModel()
 
     @State private var showAlert = false
-    @State private var alertType = AlertType.FAIL
+    @State private var activeAlert: ActiveAlert = .notComplete
     @State private var loading = false
+    @State private var errorMessage = "Unknown Error"
     
     func signUp() {
-        loading = true
-        session.signUp(email: userRegistrationViewModel.email, password: userRegistrationViewModel.password) { (result, error) in
-            self.loading = false
-            if error != nil {
-                // 有哪些错误类型？处理弹窗
-                if let errCode = AuthErrorCode(rawValue: error!._code) {
-                    print(errCode.errorMessage)
+        if(userRegistrationViewModel.email.isEmpty || userRegistrationViewModel.username.isEmpty || userRegistrationViewModel.password.isEmpty || userRegistrationViewModel.passwordConfirm.isEmpty) {
+            self.activeAlert = .notComplete
+            self.showAlert.toggle()
+        } else if (!userRegistrationViewModel.isPasswordCapitalLetter && !userRegistrationViewModel.isPasswordLengthValid && !userRegistrationViewModel.isPasswordConfirmValid) {
+            self.activeAlert = .localError
+            self.showAlert.toggle()
+        } else {
+            loading = true
+            session.signUp(email: userRegistrationViewModel.email, password: userRegistrationViewModel.password) { (result, error) in
+                self.loading = false
+                if error != nil {
+                    // 有哪些错误类型？处理弹窗
+                    if let errCode = AuthErrorCode(rawValue: error!._code) {
+                        print(errCode.errorMessage)
+                        self.activeAlert = .firebaseError
+                        self.errorMessage = errCode.errorMessage
+                        self.showAlert.toggle()
+                    }
+                    
+                    print(error!)
+                } else {
+                    if let currentUser = Auth.auth().currentUser?.createProfileChangeRequest() {
+                        currentUser.displayName = self.userRegistrationViewModel.username
+                        currentUser.commitChanges { error in
+                            if error != nil {
+                                print("There is an error", error!)
+                                Auth.auth().currentUser?.delete { error in
+                                    if let error = error {
+                                        print("Network crashed, exit the app", error)
+                                    } else {
+                                        print("Re-sign up please")
+                                    }
+                                }
+                            } else {
+                                print("Name saved normally")
+                                self.userRegistrationViewModel.email = ""
+                                self.userRegistrationViewModel.username = ""
+                                self.userRegistrationViewModel.password = ""
+                                self.userRegistrationViewModel.passwordConfirm = ""
+                                //                            self.presentationMode.wrappedValue.dismiss()
+                            }
+                        }
+                    }
                 }
-                
-                print(error!)
-            } else {
-                self.userRegistrationViewModel.email = ""
-                self.userRegistrationViewModel.username = ""
-                self.userRegistrationViewModel.password = ""
-                self.userRegistrationViewModel.passwordConfirm = ""
-                self.presentationMode.wrappedValue.dismiss()
             }
         }
     }
     
     var body: some View {
-        VStack {
-            
-            Text("Creat an account")
-                .font(.system(.largeTitle, design: .rounded))
-                .bold()
+        LoadingView(isShowing: $loading) {
+            VStack {
                 
-            
-            Group {
-                FormField(fieldName: "Email", fieldValue: $userRegistrationViewModel.email)
-                FormField(fieldName: "Username", fieldValue: $userRegistrationViewModel.username)
-                FormField(fieldName: "Password", fieldValue: $userRegistrationViewModel.password, isSecure: true)
-                FormField(fieldName: "Confirm Password", fieldValue: $userRegistrationViewModel.passwordConfirm, isSecure: true)
-            }.padding()
-            
-            Group {
-                VStack {
-                    RequirementText(iconName: "lock.open", iconColor: userRegistrationViewModel.isPasswordLengthValid ? Color.green : Color(red: 251/255, green: 128/255, blue: 128/255), text: "A minimum of 8 characters", goodInput: userRegistrationViewModel.isPasswordLengthValid, isSecure: true)
-                    RequirementText(iconName: "lock.open", iconColor: userRegistrationViewModel.isPasswordCapitalLetter ? Color.secondary : Color(red: 251/255, green: 128/255, blue: 128/255), text: "One uppercase letter", goodInput: userRegistrationViewModel.isPasswordCapitalLetter, isSecure: true)
-                    RequirementText(iconColor: userRegistrationViewModel.isPasswordConfirmValid ? Color.secondary : Color(red: 251/255, green: 128/255, blue: 128/255), text: "Your confirm password should be the same as password", goodInput: userRegistrationViewModel.isPasswordConfirmValid)
-                        .padding(.bottom, 50)
+                Text("Creat an account")
+                    .font(.system(.largeTitle, design: .rounded))
+                    .bold()
+                
+                Group {
+                    FormField(fieldName: "Email", fieldValue: self.$userRegistrationViewModel.email)
+                    FormField(fieldName: "Username", fieldValue: self.$userRegistrationViewModel.username)
+                    FormField(fieldName: "Password", fieldValue: self.$userRegistrationViewModel.password, isSecure: true)
+                    FormField(fieldName: "Confirm Password", fieldValue: self.$userRegistrationViewModel.passwordConfirm, isSecure: true)
                 }.padding()
-            }
-
-            Group {
-                // Sign up button
-                Button(action: {
-                    self.signUp()
-                }) {
-                    standardButton(text: "Sign up")
-                }
-                .alert(isPresented: self.$showAlert) {
-                    switch(alertType) {
-                    case .SUCCESS:
-                        return Alert(title: Text("Congratulation"), message: Text("You can use this account to login."), dismissButton: .default(Text("Got it")) { self.presentationMode.wrappedValue.dismiss() })
-                    case .FAIL:
-                        return Alert(title: Text("Oops!"), message: Text("Please check your input."), dismissButton: .default(Text("Got it")))
-                    case .DUPLICATE:
-                        return Alert(title: Text("Oops!"), message: Text("The username is already existing, please try another one."), dismissButton: .default(Text("Got it")))
-                    }
-                    
+                
+                Group {
+                    VStack {
+                        RequirementText(iconName: "lock.open", iconColor: self.userRegistrationViewModel.isPasswordLengthValid ? Color.green : Color(red: 251/255, green: 128/255, blue: 128/255), text: "A minimum of 8 characters", goodInput: self.userRegistrationViewModel.isPasswordLengthValid, isSecure: true)
+                        RequirementText(iconName: "lock.open", iconColor: self.userRegistrationViewModel.isPasswordCapitalLetter ? Color.secondary : Color(red: 251/255, green: 128/255, blue: 128/255), text: "One uppercase letter", goodInput: self.userRegistrationViewModel.isPasswordCapitalLetter, isSecure: true)
+                        RequirementText(iconColor: self.userRegistrationViewModel.isPasswordConfirmValid ? Color.secondary : Color(red: 251/255, green: 128/255, blue: 128/255), text: "Your confirm password should be the same as password", goodInput: self.userRegistrationViewModel.isPasswordConfirmValid)
+                            .padding(.bottom, 50)
+                    }.padding()
                 }
                 
-                HStack {
-                    Text("Already have an account?")
-                        .font(.system(.body, design: .rounded))
-                        .bold()
-                    
+                Group {
+                    // Sign up button
                     Button(action: {
-                        self.presentationMode.wrappedValue.dismiss()
+                        self.signUp()
                     }) {
-                        Text("Sign in")
-                        .font(.system(.body, design: .rounded))
-                        .bold()
-                        .foregroundColor(Color(red: 251/255, green: 128/255, blue: 128/255))
+                        standardButton(text: "Sign up and Get Start!")
                     }
-                }.padding(.top)
+                    .alert(isPresented: self.$showAlert) {
+                        switch(self.activeAlert) {
+                        case .notComplete:
+                            return Alert(title: Text("Oops!"), message: Text("Fill all blanks"), dismissButton: .default(Text("Got it")))
+                        case .firebaseError:
+                            return Alert(title: Text("Oops!"), message: Text(self.errorMessage), dismissButton: .default(Text("Got it")))
+                        case .localError:
+                            return Alert(title: Text("Oops!"), message: Text("Check your password"), dismissButton: .default(Text("Got it")))
+                        }
+                    }
+                    
+                    HStack {
+                        Text("Already have an account?")
+                            .font(.system(.body, design: .rounded))
+                            .bold()
+                        
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("Sign in")
+                                .font(.system(.body, design: .rounded))
+                                .bold()
+                                .foregroundColor(Color(red: 251/255, green: 128/255, blue: 128/255))
+                        }
+                    }.padding(.top)
+                    
+                    Spacer()
+                }
                 
-                Spacer()
             }
-            
+            .padding()
+            .resignKeyboardOnDragGesture()
         }
-    .padding()
     }
-    
-    func registerCheck() {
-//        showAlert.toggle()
-//        
-//        var allIds: [String] = []
-//        for index in 0..<users.count {
-//            if let id = users[index].userId {
-//                allIds.append(id)
-//            }
-//        }
-//        
-//        if allIds.contains(userRegistrationViewModel.username) {
-//            alertType = .DUPLICATE
-//        } else if(userRegistrationViewModel.isUsernameLengthValid && userRegistrationViewModel.isPasswordLengthValid &&
-//            userRegistrationViewModel.isPasswordCapitalLetter &&
-//            userRegistrationViewModel.isPasswordConfirmValid
-//            ) {
-//            // save to database
-//            let user = User(context: self.managedObjectContext)
-//            user.userId = self.userRegistrationViewModel.username
-//            user.password = self.userRegistrationViewModel.password
-//            do {
-//                try self.managedObjectContext.save()
-//            } catch {
-//                print(error)
-//            }
-//
-//            if !self.managedObjectContext.hasChanges {
-//                alertType = .SUCCESS
-//            }
-//        }
-    }
-    
 }
 
 
@@ -170,11 +164,6 @@ struct RequirementText: View {
             if (!goodInput) {
                 Image(systemName: iconName)
                     .foregroundColor(iconColor)
-                
-                Text(text)
-                    .font(.system(.body, design: .rounded))
-                    .foregroundColor(.secondary)
-            
             } else {
                 if(isSecure) {
                     Image(systemName: "checkmark.shield")
@@ -183,11 +172,10 @@ struct RequirementText: View {
                     Image(systemName: "checkmark.circle")
                         .foregroundColor(.green)
                 }
-                
-                Text("Good")
-                    .font(.system(.body, design: .rounded))
-                    .foregroundColor(.secondary)
             }
+            Text(text)
+            .font(.system(.body, design: .rounded))
+            .foregroundColor(.secondary)
             Spacer()
         }
         .animation(.default)

@@ -10,7 +10,7 @@ import SwiftUI
 import FirebaseAuth
 
 enum ActiveAlert {
-    case noId, passwordNotMatch, notComplete
+    case firebaseError, notComplete, localError
 }
 
 struct LoginView: View {
@@ -19,8 +19,9 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showAlert = false
-    @State private var activeAlert: ActiveAlert = .noId
+    @State private var activeAlert: ActiveAlert = .firebaseError
     @State private var showAddSheet = false
+    @State private var errorMessage = "Unknown Error"
     @State var loading = false
     
     
@@ -28,87 +29,82 @@ struct LoginView: View {
         if email.isEmpty || password.isEmpty {
             self.activeAlert = .notComplete
             self.showAlert.toggle()
-        }
-        
-        loading = true
-        
-        session.signIn(email: email, password: password) { (result, error) in
-            self.loading = false
-            if error != nil {
-                // 有哪些错误类型？处理弹窗
-                if let errCode = AuthErrorCode(rawValue: error!._code) {
-                    print(errCode.errorMessage)
+        } else {
+            loading = true
+            
+            session.signIn(email: email, password: password) { (result, error) in
+                self.loading = false
+                if error != nil {
+                    // 有哪些错误类型？处理弹窗
+                    if let errCode = AuthErrorCode(rawValue: error!._code) {
+                        print(errCode.errorMessage)
+                        self.activeAlert = .firebaseError
+                        self.errorMessage = errCode.errorMessage
+                        self.showAlert.toggle()
+                    }
+                    
+                    print(error!)
+                } else {
+                    print("should go to tab view")
+                    self.email = ""
+                    self.password = ""
                 }
-                
-                print(error!)
-            } else {
-                print("should go to tab view")
-                self.email = ""
-                self.password = ""
             }
         }
     }
     
-        // 比较账号密码，无账号，密码错误，弹窗
-    //    func checkLogin() {
-    //
-    //        else if !allIds.contains(userId) {
-    //            self.activeAlert = .noId
-    //            self.showAlert.toggle()
-    //        }
-    //        else if !passwordIsMatch {
-    //            self.activeAlert = .passwordNotMatch
-    //            self.showAlert.toggle()
-    //        }
-    //        else {
-    //            withAnimation {
-    //                self.loginPermission.isLogin = true
-    //            }
-    //            print("Hello")
-    //        }
-    //    }
-    
     var body: some View {
-        VStack {
-            Image("foodpin-logo")
-                .padding(.bottom, 70)
-            
+        LoadingView(isShowing: $loading) {
             VStack {
-                VStack(spacing: 50) {
-                    FormField(fieldName: "Email", fieldValue: $email)
-                    FormField(fieldName: "Password", fieldValue: $password, isSecure: true)
+                Image("foodpin-logo")
+
+                VStack {
+                    VStack(spacing: 50) {
+                        FormField(fieldName: "Email", fieldValue: self.$email)
+                        FormField(fieldName: "Password", fieldValue: self.$password, isSecure: true)
+                        
+                    }.padding()
                     
-                }.padding()
-                
-                VStack(spacing: 10) {
-                    Button(action: { self.signIn() }) {
-                        standardButton(text: "Sign in")
-                    }
-                    .padding(.top, 50)
-                    .alert(isPresented: $showAlert) {
-                        switch activeAlert {
-                        case .noId:
-                            return Alert(title: Text("Oops"), message: Text("No such account"), dismissButton: .default(Text("Got it")))
-                        case .passwordNotMatch:
-                            return Alert(title: Text("Oops"), message: Text("Password does not match"), dismissButton: .default(Text("Got it")))
-                        case .notComplete:
-                            return Alert(title: Text("Oops"), message: Text("Fill all blanks"), dismissButton: .default(Text("Got it")))
+                    VStack(spacing: 10) {
+                        Button(action: { self.signIn() }) {
+                            standardButton(text: "Sign in")
                         }
-                    }
-                    
-                    Button(action: {
-                        print("Button Pushed")
-                        self.showAddSheet.toggle()
-                        print(self.showAddSheet)
-                    }) {
-                        standardButton(text: "Register")
-                    }.sheet(isPresented: self.$showAddSheet) {
-                        EnrollView().environmentObject(self.session)
+                        .padding(.top, 50)
+
+                        HStack {
+                            Text("New Here?")
+                                .font(.system(.body, design: .rounded))
+                                .bold()
+                            
+                            Button(action: {
+                                print("Button Pushed")
+                                self.showAddSheet.toggle()
+                                print(self.showAddSheet)
+                            }) {
+                                Text("Sign Up")
+                                .font(.system(.body, design: .rounded))
+                                .bold()
+                                .foregroundColor(Color(red: 251/255, green: 128/255, blue: 128/255))
+                            }.sheet(isPresented: self.$showAddSheet) {
+                                EnrollView().environmentObject(self.session)
+                            }
+                        }.padding(.top)
+                        
                     }
                 }
+                .padding()
             }
-            .padding()
+            .resignKeyboardOnDragGesture()
         }
+        .alert(isPresented: self.$showAlert) {
+            switch self.activeAlert {
+            case .notComplete:
+                return Alert(title: Text("Oops"), message: Text("Fill all blanks"), dismissButton: .default(Text("Got it")))
+            default:
+                return Alert(title: Text("Oops"), message: Text(self.errorMessage), dismissButton: .default(Text("Got it")))
+            }
+        }
+        
     }
     
 }

@@ -16,7 +16,6 @@ class UserRegistrationViewModel: ObservableObject {
     @Published var password = ""
     @Published var passwordConfirm = ""
     
-    @Published var isUsernameLengthValid = false
     @Published var isPasswordLengthValid = false
     @Published var isPasswordCapitalLetter = false
     @Published var isPasswordConfirmValid = false
