@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct RestaurantCloudRow: View {
     @EnvironmentObject var cloudData: SharedData
@@ -15,8 +16,18 @@ struct RestaurantCloudRow: View {
     
     private let emojiChoices = ["love", "happy", "cool", "sad", "angry"]
     @State private var currentRating = [0, 0, 0, 0, 0]
-    let userName = "Jeff"
-    @State var testComment: [String] = []
+    
+    let user = Auth.auth().currentUser
+    
+    var userName: String {
+        if let name = user?.displayName {
+            return name
+        } else {
+            return "Unknown"
+        }
+    }
+    
+    @State var presentComments: [String] = []
     @State var newComment = ""
 
     @State private var showAlert = false
@@ -29,11 +40,18 @@ struct RestaurantCloudRow: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Image(restaurant.image)
+            if(restaurant.realImage != nil) {
+                restaurant.realImage!
+                    .resizable()
+                    .aspectRatio(3/2, contentMode: .fit)
+                    .cornerRadius(5)
+            } else {
+                Image(restaurant.image)
                 .resizable()
                 .aspectRatio(3/2, contentMode: .fit)
                 .cornerRadius(5)
-            
+            }
+
             HStack {
                 Text(restaurant.name)
                     .font(.system(.title, design: .rounded))
@@ -94,8 +112,8 @@ struct RestaurantCloudRow: View {
                     .foregroundColor(.black)
                     .onTapGesture {
                         if(self.newComment != "") {
-                            self.testComment.append(self.newComment)
-                            self.restaurant.comments.append(self.newComment)
+                            self.presentComments.append("\(self.userName): \(self.newComment)")
+                            self.restaurant.comments.append("\(self.userName): \(self.newComment)")
                             self.newComment = ""
                         }
                 }
@@ -103,16 +121,17 @@ struct RestaurantCloudRow: View {
                 
             }
             
+            
             VStack(alignment: .leading, spacing: 5) {
-                ForEach(testComment, id: \.self) { comment in
-                    Text(self.userName + ": " + comment)
+                ForEach(presentComments, id: \.self) { comment in
+                    Text(comment)
                 }
             }
         }
         .padding()
         .onAppear{
             self.currentRating = self.restaurant.ratingRow
-            self.testComment = self.restaurant.comments
+            self.presentComments = self.restaurant.comments
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Warning"), message: Text("You have already rated!"), dismissButton: .default(Text("OK")))
@@ -125,6 +144,6 @@ struct RestaurantCloudRow: View {
 
 struct RestaurantCloudRow_Previews: PreviewProvider {
     static var previews: some View {
-        RestaurantCloudRow(restaurant: Restaurant(name: "Lao Changsha", type: "Xiang", location: "Macau", image: "restaurant", rating: "Happy", phone: "6599", description: "A good restaurant"))
+        RestaurantCloudRow(restaurant: Restaurant(name: "Lao Changsha", type: "Xiang", location: "Macau", image: "restaurant", rating: "Happy", phone: "6599", description: "A good restaurant", ratingRow: [0, 0, 0, 0, 0]))
     }
 }
