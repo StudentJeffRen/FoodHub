@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import FirebaseAuth
+import Firebase
 
 /*
  1. 有空白
@@ -63,6 +63,8 @@ struct EnrollView: View {
                                     }
                                 }
                             } else {
+                                Firestore.firestore().collection("users").document(Auth.auth().currentUser?.uid ?? "unknown").setData(["name": self.userRegistrationViewModel.username])
+                                print(Auth.auth().currentUser?.uid ?? "WHo are you?")
                                 print("Name saved normally")
                                 self.userRegistrationViewModel.email = ""
                                 self.userRegistrationViewModel.username = ""
@@ -81,7 +83,7 @@ struct EnrollView: View {
         LoadingView(isShowing: $loading) {
             VStack {
                 
-                Text("Creat an account")
+                Text("Create an account")
                     .font(.system(.largeTitle, design: .rounded))
                     .bold()
                 
