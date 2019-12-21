@@ -12,8 +12,8 @@ import CoreLocation
 struct EditView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var locationManager: LocationManager
-    @EnvironmentObject var localData: UserData
-    var restaurantIndex: Int
+    @EnvironmentObject var localData: LocalList
+    @Binding var restaurant: Restaurant
     @State private var name = ""
     @State private var type = ""
     @State private var location = ""
@@ -43,11 +43,12 @@ struct EditView: View {
                     Spacer()
                     
                     Button(action: {
-                        self.localData.restaurants[self.restaurantIndex].name = self.name
-                        self.localData.restaurants[self.restaurantIndex].type = self.type
-                        self.localData.restaurants[self.restaurantIndex].location = self.location
-                        self.localData.restaurants[self.restaurantIndex].phone = self.phone
-                        self.localData.restaurants[self.restaurantIndex].description = self.description
+                        self.restaurant.name = self.name
+                        self.restaurant.type = self.type
+                        self.restaurant.location = self.location
+                        self.restaurant.phone = self.phone
+                        self.restaurant.description = self.description
+                        self.localData.updateRestaurnat(self.restaurant)
                         
                         print("Modify successfully!")
                         self.presentationMode.wrappedValue.dismiss()
@@ -60,96 +61,87 @@ struct EditView: View {
             }
             
             VStack(alignment: .leading) {
-                Text("NAME:")
-                    .font(.system(.title, design: .rounded))
-                    .padding(.horizontal)
-                
-                FormField(fieldName: "Enter Name", fieldValue: $name)
-                    .onAppear{
-                        self.name = self.localData.restaurants[self.restaurantIndex].name
-                }
-                
-                HStack {
-                    Text("TYPE:")
+                Group {
+                    Text("NAME:")
                         .font(.system(.title, design: .rounded))
-                        .padding(.horizontal)
+                    FormField(fieldName: "Enter Name", fieldValue: $name)
                     
-                    Text(type)
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .onAppear {
-                            self.type = self.localData.restaurants[self.restaurantIndex].type
-                    }
-                }
-                
-                HStack {
-                    Button(action: {
-                        self.type = "Xiang"
-                    }) {
-                        TypeTag(type: "Xiang")
+                    HStack {
+                        Text("TYPE:")
+                            .font(.system(.title, design: .rounded))
+                        Text(type)
                     }
                     
-                    Button(action: {
-                        self.type = "Chuan"
-                    }) {
-                        TypeTag(type: "Chuan")
-                    }
-                    
-                    Button(action: {
-                        self.type = "Yue"
-                    }) {
-                        TypeTag(type: "Yue")
-                    }
-                    
-                    Button(action: {
-                        self.type = "Fast Food"
-                    }) {
-                        TypeTag(type: "Fast Food")
-                    }
-                    
-                    Button(action: {
-                        self.type = "Lo Mein"
-                    }) {
-                        TypeTag(type: "Lo Mein")
-                    }
-                }.padding()
-                
-                Text("ADDRESS:")
-                    .font(.system(.title, design: .rounded))
-                    .padding(.horizontal)
-                
-                HStack {
-                    Button(action: {
-                        // get current location
-                        self.getAddressFromLatLon(latitude: self.userLatitude, longitude: self.userLongitude) { addressString in
-                            self.location = addressString
+                    HStack {
+                        Button(action: {
+                            self.type = "Xiang"
+                        }) {
+                            TypeTag(type: "Xiang")
                         }
-                    }) {
-                        Image(systemName: "location.fill")
-                            .font(.title)
+                        
+                        Button(action: {
+                            self.type = "Chuan"
+                        }) {
+                            TypeTag(type: "Chuan")
+                        }
+                        
+                        Button(action: {
+                            self.type = "Yue"
+                        }) {
+                            TypeTag(type: "Yue")
+                        }
+                        
+                        Button(action: {
+                            self.type = "Fast Food"
+                        }) {
+                            TypeTag(type: "Fast Food")
+                        }
+                        
+                        Button(action: {
+                            self.type = "Lo Mein"
+                        }) {
+                            TypeTag(type: "Lo Mein")
+                        }
+                    }.padding(.vertical)
+                    
+                    Text("ADDRESS:")
+                        .font(.system(.title, design: .rounded))
+                    
+                    
+                    HStack {
+                        Button(action: {
+                            self.getAddressFromLatLon(latitude: self.userLatitude, longitude: self.userLongitude) { addressString in
+                                self.location = addressString
+                            }
+                        }) {
+                            Image(systemName: "location.fill")
+                                .font(.title)
+                        }
+                        FormField(fieldName: "Click the Button or Type", fieldValue: $location)
                     }
                     
-                    FormField(fieldName: "Click the Button or Type", fieldValue: $location).onAppear{
-                        self.location = self.localData.restaurants[self.restaurantIndex].location
-                    }
+                    Text("PHONE:")
+                        .font(.system(.title, design: .rounded))
+                    
+                    FormField(fieldName: "Enter Phone Number(Optional)", fieldValue: $phone)
+                    
+                    Text("DESCRIPTION:")
+                        .font(.system(.title, design: .rounded))
+                    
+                    FormField(fieldName: "Describe the Restaurant(Optional)", fieldValue: $description)
                 }.padding(.horizontal)
                 
-                Text("PHONE:")
-                    .font(.system(.title, design: .rounded))
-                    .padding(.horizontal)
-                FormField(fieldName: "Enter Phone Number", fieldValue: $phone).onAppear{
-                    self.phone = self.localData.restaurants[self.restaurantIndex].phone
-                }
-                
-                Text("DESCRIPTION:")
-                    .font(.system(.title, design: .rounded))
-                    .padding(.horizontal)
-                FormField(fieldName: "Describe the Restaurant", fieldValue: $description).onAppear{
-                    self.description = self.localData.restaurants[self.restaurantIndex].description
-                }
             }
         }
+        .onAppear {
+            self.name = self.restaurant.name
+            self.type = self.restaurant.type
+            self.location = self.restaurant.location
+            self.phone = self.restaurant.phone
+            self.description = self.restaurant.description
+        }
     }
-        
+    
     func getAddressFromLatLon(latitude: CLLocationDegrees, longitude: CLLocationDegrees, completion: @escaping(String)->()) {
         let geoCoder: CLGeocoder = CLGeocoder()
         
@@ -186,8 +178,11 @@ struct EditView: View {
     }
 }
 
-struct EditView_Previews: PreviewProvider {
-    static var previews: some View {
-        EditView(restaurantIndex: 0).environmentObject(UserData(from: restaurantLocalData))
-    }
-}
+
+
+
+//struct EditView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        EditView(restaurantIndex: 0).environmentObject(UserData(from: restaurantLocalData))
+//    }
+//}

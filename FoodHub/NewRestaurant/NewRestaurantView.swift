@@ -11,9 +11,8 @@ import CoreLocation
 
 struct NewRestaurantView: View {
     @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var localData: UserData
+    @EnvironmentObject var localData: LocalList
     @EnvironmentObject var locationManager: LocationManager
-    var newRestaurat = Restaurant()
     @State private var name = ""
     @State private var type = ""
     @State private var location = ""
@@ -28,6 +27,95 @@ struct NewRestaurantView: View {
     }
     var userLongitude: CLLocationDegrees {
         return locationManager.lastLocation?.coordinate.longitude ?? 0
+    }
+    
+    fileprivate func creatNewRestaurant() {
+        if(self.name == "" || self.type == "" || self.location == "") {
+            // 必要信息不全
+            self.showAlert.toggle()
+        } else if(self.phone == "" || self.description == "") {
+            // 可选信息
+            if(self.description != "") {
+                let newRestaurant = Restaurant(id: UUID().uuidString,
+                                               name: self.name,
+                                               type: self.type,
+                                               location: self.location,
+                                               image: "discover",
+                                               rating: "",
+                                               phone: "",
+                                               description: self.description,
+                                               ratingRow: [0, 0, 0, 0, 0],
+                                               allowRating: [:],
+                                               isCloud: false,
+                                               comments: [],
+                                               isCollect: [:])
+//                if(self.image != nil) {
+//                    self.newRestaurat.realImage = self.image!
+//                }
+                self.localData.addRestaurnat(newRestaurant)
+                self.presentationMode.wrappedValue.dismiss()
+            } else if(self.phone != "") {
+                let newRestaurant = Restaurant(id: UUID().uuidString,
+                                               name: self.name,
+                                               type: self.type,
+                                               location: self.location,
+                                               image: "discover",
+                                               rating: "",
+                                               phone: self.phone,
+                                               description: "",
+                                               ratingRow: [0, 0, 0, 0, 0],
+                                               allowRating: [:],
+                                               isCloud: false,
+                                               comments: [],
+                                               isCollect: [:])
+//                if(self.image != nil) {
+//                    self.newRestaurat.realImage = self.image!
+//                }
+                self.localData.addRestaurnat(newRestaurant)
+                self.presentationMode.wrappedValue.dismiss()
+            } else {
+                let newRestaurant = Restaurant(id: UUID().uuidString,
+                                               name: self.name,
+                                               type: self.type,
+                                               location: self.location,
+                                               image: "discover",
+                                               rating: "",
+                                               phone: "",
+                                               description: "",
+                                               ratingRow: [0, 0, 0, 0, 0],
+                                               allowRating: [:],
+                                               isCloud: false,
+                                               comments: [],
+                                               isCollect: [:])
+                
+//                if(self.image != nil) {
+//                    self.newRestaurat.realImage = self.image!
+//                }
+                self.localData.addRestaurnat(newRestaurant)
+                self.presentationMode.wrappedValue.dismiss()
+            }
+        } else {
+            // 所有信息齐全
+            let newRestaurant = Restaurant(id: UUID().uuidString,
+                                           name: self.name,
+                                           type: self.type,
+                                           location: self.location,
+                                           image: "discover",
+                                           rating: "",
+                                           phone: self.phone,
+                                           description: self.description,
+                                           ratingRow: [0, 0, 0, 0, 0],
+                                           allowRating: [:],
+                                           isCloud: false,
+                                           comments: [],
+                                           isCollect: [:])
+//            if(self.image != nil) {
+//                self.newRestaurat.realImage = self.image!
+//            }
+            self.localData.addRestaurnat(newRestaurant)
+            print("Create successfully!")
+            self.presentationMode.wrappedValue.dismiss()
+        }
     }
     
     var body: some View {
@@ -139,56 +227,7 @@ struct NewRestaurantView: View {
                     Spacer()
                     
                     Button(action: {
-                        if(self.name == "" || self.type == "" || self.location == "") {
-                            // 必要信息不全
-                            self.showAlert.toggle()
-                        } else if(self.phone == "" || self.description == "") {
-                            // 可选信息
-                            if(self.description != "") {
-                                self.newRestaurat.name = self.name
-                                self.newRestaurat.type = self.type
-                                self.newRestaurat.location = self.location
-                                self.newRestaurat.description = self.description
-                                if(self.image != nil) {
-                                    self.newRestaurat.realImage = self.image!
-                                }
-                                self.localData.restaurants.append(self.newRestaurat)
-                                self.presentationMode.wrappedValue.dismiss()
-                            } else if(self.phone != "") {
-                                self.newRestaurat.name = self.name
-                                self.newRestaurat.type = self.type
-                                self.newRestaurat.location = self.location
-                                self.newRestaurat.phone = self.phone
-                                if(self.image != nil) {
-                                    self.newRestaurat.realImage = self.image!
-                                }
-                                self.localData.restaurants.append(self.newRestaurat)
-                                self.presentationMode.wrappedValue.dismiss()
-                            } else {
-                                self.newRestaurat.name = self.name
-                                self.newRestaurat.type = self.type
-                                self.newRestaurat.location = self.location
-                                if(self.image != nil) {
-                                    self.newRestaurat.realImage = self.image!
-                                }
-                                self.localData.restaurants.append(self.newRestaurat)
-                                self.presentationMode.wrappedValue.dismiss()
-                            }
-                        } else {
-                            // 所有信息齐全
-                            self.newRestaurat.name = self.name
-                            self.newRestaurat.type = self.type
-                            self.newRestaurat.location = self.location
-                            self.newRestaurat.phone = self.phone
-                            self.newRestaurat.description = self.description
-                            if(self.image != nil) {
-                                self.newRestaurat.realImage = self.image!
-                            }
-                            self.localData.restaurants.append(self.newRestaurat)
-                            print("Create successfully!")
-                            self.presentationMode.wrappedValue.dismiss()
-                        }
-                        
+                        self.creatNewRestaurant()
                     }) {
                         Image(systemName: "folder.badge.plus")
                             .font(.title)

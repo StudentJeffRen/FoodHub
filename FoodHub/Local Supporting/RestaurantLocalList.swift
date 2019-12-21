@@ -7,10 +7,20 @@
 //  设置不同的 data，为本地，云端，搜索结果
 
 import SwiftUI
+import Firebase
 
 struct RestaurantLocalList: View {
-    @EnvironmentObject var localData: UserData
+    @EnvironmentObject var localData: LocalList
     @EnvironmentObject var locationManager: LocationManager
+    let user = Auth.auth().currentUser
+    
+    var userId: String {
+        if let id = user?.uid {
+            return id
+        } else {
+            return "Unknown"
+        }
+    }
     
     var body: some View {
         List {
@@ -23,7 +33,12 @@ struct RestaurantLocalList: View {
     }
     
     func delete(at offsets: IndexSet) {
-        localData.restaurants.remove(atOffsets: offsets)
+        if let first = offsets.first {
+            var mutableRestaurant = localData.restaurants[first]
+            mutableRestaurant.isCollect[userId] = false
+            localData.updateRestaurnat(mutableRestaurant)
+            localData.removeRestaurant(localData.restaurants[first])
+        }
     }
 }
 
@@ -67,7 +82,7 @@ struct RestaurantRow: View {
 struct RestaurantList_Previews: PreviewProvider {
     static var previews: some View {
             RestaurantLocalList()
-            .environmentObject(UserData(from: restaurantLocalData))
+            .environmentObject(LocalList())
             .environmentObject(LocationManager())
     }
 }

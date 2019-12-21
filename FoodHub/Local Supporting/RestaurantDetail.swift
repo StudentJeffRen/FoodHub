@@ -8,28 +8,33 @@
 
 import SwiftUI
 import UIKit
+import Firebase
 
 struct RestaurantDetail: View {
     @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var localData: UserData
-    @EnvironmentObject var cloudData: SharedData
+    @EnvironmentObject var localData: LocalList
+    @EnvironmentObject var cloudData: CloudList
     @EnvironmentObject var locationManager: LocationManager
     @State private var showRating = false
     @State private var showEdit = false
-    @State private var showAlert = false
+    @State private var showActionSheet = false
     @State private var rating = ""
     @State private var isCloud = false
     
     var restaurant: Restaurant
-    
-    // 传过来的是 localData 中的哪一个
-    var restaurantIndex: Int {
-        localData.restaurants.firstIndex(where: {$0.id == restaurant.id})!
-    }
-    
-    var cloudIndex: Int {
-        cloudData.sharedRestaurants.firstIndex(where: {$0.id == restaurant.id})!
-    }
+    @State var mutableRestaurant = Restaurant(id: UUID().uuidString,
+                                                      name: "",
+                                                      type: "",
+                                                      location: "",
+                                                      image: "discover",
+                                                      rating: "",
+                                                      phone: "",
+                                                      description: "",
+                                                      ratingRow: [0, 0, 0, 0, 0],
+                                                      allowRating: [:],
+                                                      isCloud: false,
+                                                      comments: [],
+                                                      isCollect: [:])
     
     var body: some View {
         ScrollView {
@@ -62,7 +67,7 @@ struct RestaurantDetail: View {
                         }
                         Spacer()
                         Button(action: {
-                            self.showAlert.toggle()
+                            self.showActionSheet.toggle()
                         }) {
                             Image(systemName: restaurant.isCloud ? "cloud" : "square.and.arrow.up")
                                 .animation(.default)
@@ -88,19 +93,12 @@ struct RestaurantDetail: View {
                         Button(action: {
                             self.showRating.toggle()
                         }) {
-                            Text("Rating")
-                                .font(.system(.body, design: .rounded))
-                                .foregroundColor(.white)
-                                .bold()
-                                .padding()
-                                .background(LinearGradient(gradient: Gradient(colors: [Color(red: 251/255, green: 128/255, blue: 128/255), Color(red: 253/255, green: 193/255, blue: 104/255)]), startPoint: .leading, endPoint: .trailing))
-                                .cornerRadius(10)
-                        }.sheet(isPresented: $showRating) {
-                            RatingView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData)
+                            ratingButton()
+                            .sheet(isPresented: $showRating) {
+                                RatingView(restaurant: self.$mutableRestaurant).environmentObject(self.localData)
+                            }
                         }
                     }
-                    
-                    
                     
                     HStack {
                         Image(systemName: "text.badge.star")
@@ -123,36 +121,47 @@ struct RestaurantDetail: View {
         .overlay(Button(action: {
             self.presentationMode.wrappedValue.dismiss()
         }) {
-            Image(systemName: "chevron.left.circle.fill")
-                .font(.title)
-                .foregroundColor(.white)
-                .padding()
+            backButton()
         }, alignment: .topLeading)
-            .overlay(Button(action: {
-                self.showEdit.toggle()
-            }) {
-                Image(systemName: "pencil.circle.fill")
-                    .font(.title)
-                    .foregroundColor(.white)
-                    .padding()
-            }
+            
+        .overlay(Button(action: {
+            self.showEdit.toggle()
+        }) {
+            editButton()
             .sheet(isPresented: $showEdit) {
-                EditView(restaurantIndex: self.restaurantIndex).environmentObject(self.localData).environmentObject(self.locationManager)
-            }, alignment: .topTrailing)
+                EditView(restaurant: self.$mutableRestaurant).environmentObject(self.localData).environmentObject(self.locationManager)
+            }
+        }, alignment: .topTrailing)
+            
         .navigationBarTitle("")
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
-        .alert(isPresented: $showAlert) {
+            
+        .actionSheet(isPresented: $showActionSheet) {
             switch isCloud {
             case true:
-                return Alert(title: Text("Reminder"), message: Text("Cancel Share?"), primaryButton: .default(Text("Yes"), action: {self.cancelShare()}), secondaryButton: .cancel(Text("No")))
+                return ActionSheet(title: Text("Cancel Share?"), buttons: [
+                    .default(
+                        Text("Yes"), action: self.cancelShare
+                    ),
+                    .destructive(Text("Cancel"))
+                ])
+                
             case false:
-                return Alert(title: Text("Reminder"), message: Text("Share?"), primaryButton: .default(Text("Yes"), action: {self.upload()}), secondaryButton: .cancel(Text("No")))
+                return ActionSheet(title: Text("Share?"), buttons: [
+                    .default(
+                        Text("Yes"), action: self.upload
+                    ),
+                    .destructive(Text("Cancel"))
+                ])
             }
         }
+        
+        
         .edgesIgnoringSafeArea(.top)
         .onAppear {
             self.isCloud = self.restaurant.isCloud
+            self.mutableRestaurant = self.restaurant
         }
     }
     
@@ -161,8 +170,20 @@ struct RestaurantDetail: View {
         withAnimation {
             isCloud.toggle()
         }
-        localData.restaurants[restaurantIndex].isCloud.toggle()
-        cloudData.sharedRestaurants.append(localData.restaurants[restaurantIndex])
+        
+        switch self.restaurant.rating {
+        case "love": mutableRestaurant.ratingRow[0] += 1
+        case "happy": mutableRestaurant.ratingRow[1] += 1
+        case "cool": mutableRestaurant.ratingRow[2] += 1
+        case "sad": mutableRestaurant.ratingRow[3] += 1
+        case "angry": mutableRestaurant.ratingRow[4] += 1
+        default:
+            break
+        }
+        
+        mutableRestaurant.isCloud = true
+        localData.updateRestaurnat(mutableRestaurant)
+        cloudData.addRestaurnat(mutableRestaurant)
     }
     
     func cancelShare() {
@@ -170,14 +191,45 @@ struct RestaurantDetail: View {
         withAnimation {
             isCloud.toggle()
         }
-        localData.restaurants[restaurantIndex].isCloud.toggle()
-        cloudData.sharedRestaurants.remove(at: cloudIndex)
+        mutableRestaurant.isCloud = false
+        localData.updateRestaurnat(mutableRestaurant)
+        cloudData.removeRestaurant(mutableRestaurant)
     }
 }
 
-struct RestaurantDetail_Previews: PreviewProvider {
-    static var previews: some View {
-        RestaurantDetail(restaurant: Restaurant(name: "Lao Changsha", type: "湘菜", location: "Macau", image: "restaurant", rating: "sad", phone: "6599", description: "A good place", ratingRow: [0, 0, 0, 0, 0]))
-        
+//struct RestaurantDetail_Previews: PreviewProvider {
+//    static var previews: some View {
+//        RestaurantDetail(restaurant: Restaurant(name: "Lao Changsha", type: "湘菜", location: "Macau", image: "restaurant", rating: "sad", phone: "6599", description: "A good place", ratingRow: [0, 0, 0, 0, 0]))
+//        
+//    }
+//}
+
+struct editButton: View {
+    var body: some View {
+        Image(systemName: "pencil.circle.fill")
+            .font(.title)
+            .foregroundColor(Color.secondary)
+            .padding()
+    }
+}
+
+struct backButton: View {
+    var body: some View {
+        Image(systemName: "chevron.left.circle.fill")
+            .font(.title)
+            .foregroundColor(Color.secondary)
+            .padding()
+    }
+}
+
+struct ratingButton: View {
+    var body: some View {
+        Text("Rating")
+            .font(.system(.body, design: .rounded))
+            .foregroundColor(.white)
+            .bold()
+            .padding()
+            .background(LinearGradient(gradient: Gradient(colors: [Color(red: 251/255, green: 128/255, blue: 128/255), Color(red: 253/255, green: 193/255, blue: 104/255)]), startPoint: .leading, endPoint: .trailing))
+            .cornerRadius(10)
     }
 }
