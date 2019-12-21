@@ -9,18 +9,24 @@
 import SwiftUI
 
 struct RestaurantListCloud: View {
-    @EnvironmentObject var cloudData: SharedData
-    @EnvironmentObject var localData: UserData
+    @EnvironmentObject var cloudData: CloudList
+    @EnvironmentObject var localData: LocalList
     
     var body: some View {
         NavigationView {
-            List(cloudData.sharedRestaurants) { restaurant in
+            List(cloudData.restaurants) { restaurant in
                 RestaurantCloudRow(restaurant: restaurant)
                     .environmentObject(self.cloudData)
                     .environmentObject(self.localData)
             }
             
             .navigationBarTitle(Text("Cloud"))
+        }
+        .onAppear {
+            self.cloudData.startListener()
+        }
+        .onDisappear {
+            self.cloudData.stopListener()
         }
     }
 }

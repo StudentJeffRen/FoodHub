@@ -10,15 +10,27 @@ import SwiftUI
 import Firebase
 
 struct RestaurantCloudRow: View {
-    @EnvironmentObject var cloudData: SharedData
-    @EnvironmentObject var localData: UserData
+    @EnvironmentObject var cloudData: CloudList
+    @EnvironmentObject var localData: LocalList
     var restaurant: Restaurant
-    
     private let emojiChoices = ["love", "happy", "cool", "sad", "angry"]
     @State private var currentRating = [0, 0, 0, 0, 0]
-    
+    @State var mutableRestaurant = Restaurant(id: UUID().uuidString,
+                                              name: "",
+                                              type: "",
+                                              location: "",
+                                              image: "discover",
+                                              rating: "",
+                                              phone: "",
+                                              description: "",
+                                              ratingRow: [0, 0, 0, 0, 0],
+                                              allowRating: [:],
+                                              isCloud: false,
+                                              comments: [],
+                                              isCollect: [:])
+
     let user = Auth.auth().currentUser
-    
+
     var userName: String {
         if let name = user?.displayName {
             return name
@@ -27,16 +39,18 @@ struct RestaurantCloudRow: View {
         }
     }
     
-    @State var presentComments: [String] = []
-    @State var newComment = ""
-
+    var userId: String {
+        if let id = user?.uid {
+            return id
+        } else {
+            return "Unknown"
+        }
+    }
+    
+    @State private var newComment = ""
     @State private var showAlert = false
     @State private var showDetail = false
-    @State private var isCollect = false
     
-    var restaurantIndex: Int {
-        cloudData.sharedRestaurants.firstIndex(where: {$0.id == restaurant.id})!
-    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -59,13 +73,14 @@ struct RestaurantCloudRow: View {
                     .lineLimit(3)
                     .padding(.bottom, 0)
                 
-                Image(systemName: isCollect ? "star.fill" : "star")
-                    .foregroundColor(isCollect ? .yellow : .black)
+                Image(systemName: (self.mutableRestaurant.isCollect[self.userId] == true) ? "star.fill" : "star")
+                    .foregroundColor((self.mutableRestaurant.isCollect[self.userId] == true) ? .yellow : .black)
                     .onTapGesture {
-                        if(self.isCollect == false) {
-                            self.localData.restaurants.append(self.restaurant)
+                        if((self.mutableRestaurant.isCollect[self.userId] == true) == false) {
+                            self.mutableRestaurant.isCollect[self.userId] = true
+                            self.cloudData.updateRestaurnat(self.mutableRestaurant)
+                            self.localData.addRestaurnat(self.mutableRestaurant)
                         }
-                        self.isCollect = true
                 }
             }
             
@@ -82,13 +97,13 @@ struct RestaurantCloudRow: View {
                         Image(self.emojiChoices[emojiIndex])
                             .resizable()
                             .frame(width: 25, height: 25)
-                        Text(String(self.currentRating[emojiIndex]))
+                        Text(String(self.mutableRestaurant.ratingRow[emojiIndex]))
                     }
                     .onTapGesture {
-                        if(self.restaurant.allowRating) {
-                            self.currentRating[emojiIndex] += 1
-                            self.restaurant.ratingRow[emojiIndex] = self.currentRating[emojiIndex]
-                            self.restaurant.allowRating = false
+                        if(self.mutableRestaurant.allowRating[self.userId] != false) {
+                            self.mutableRestaurant.ratingRow[emojiIndex] += 1
+                            self.mutableRestaurant.allowRating[self.userId] = false
+                            self.cloudData.updateRestaurnat(self.mutableRestaurant)
                         } else {
                             self.showAlert = true
                         }
@@ -112,8 +127,8 @@ struct RestaurantCloudRow: View {
                     .foregroundColor(.black)
                     .onTapGesture {
                         if(self.newComment != "") {
-                            self.presentComments.append("\(self.userName): \(self.newComment)")
-                            self.restaurant.comments.append("\(self.userName): \(self.newComment)")
+                            self.mutableRestaurant.comments.append("\(self.userName): \(self.newComment)")
+                            self.cloudData.updateRestaurnat(self.mutableRestaurant)
                             self.newComment = ""
                         }
                 }
@@ -123,15 +138,14 @@ struct RestaurantCloudRow: View {
             
             
             VStack(alignment: .leading, spacing: 5) {
-                ForEach(presentComments, id: \.self) { comment in
+                ForEach(mutableRestaurant.comments, id: \.self) { comment in
                     Text(comment)
                 }
             }
         }
         .padding()
         .onAppear{
-            self.currentRating = self.restaurant.ratingRow
-            self.presentComments = self.restaurant.comments
+            self.mutableRestaurant = self.restaurant
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text("Warning"), message: Text("You have already rated!"), dismissButton: .default(Text("OK")))
@@ -142,8 +156,10 @@ struct RestaurantCloudRow: View {
     }
 }
 
-struct RestaurantCloudRow_Previews: PreviewProvider {
-    static var previews: some View {
-        RestaurantCloudRow(restaurant: Restaurant(name: "Lao Changsha", type: "Xiang", location: "Macau", image: "restaurant", rating: "Happy", phone: "6599", description: "A good restaurant", ratingRow: [0, 0, 0, 0, 0]))
-    }
-}
+//#if DEBUG
+//struct RestaurantCloudRow_Previews: PreviewProvider {
+//    static var previews: some View {
+//        RestaurantCloudRow(restaurant: Restaurant(name: "Lao Changsha", type: "Xiang", location: "Macau", image: "restaurant", rating: "Happy", phone: "6599", description: "A good restaurant", ratingRow: [0, 0, 0, 0, 0]))
+//    }
+//}
+//#endif
