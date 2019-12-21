@@ -15,6 +15,7 @@ enum ActiveAlert {
 
 struct LoginView: View {
     @EnvironmentObject var session: SessionStore
+    @EnvironmentObject var localData: LocalList
     
     @State private var email = ""
     @State private var password = ""
@@ -33,6 +34,7 @@ struct LoginView: View {
             loading = true
             
             session.signIn(email: email, password: password) { (result, error) in
+                self.localData.startListener()
                 self.loading = false
                 if error != nil {
                     // 有哪些错误类型？处理弹窗
